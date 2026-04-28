@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LegalTech AI - Analysis App</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-window">
+  <div class="app-card">
+    
+    <div class="app-header">
+      <div class="header-content">
+        <span class="logo-icon">⚖️</span>
+        <h2>LegalTech <span class="accent-text">AI</span></h2>
+      </div>
+      <div class="status-container">
+        <span class="pulse-dot"></span>
+        <p class="status">System Online • Secure SSL</p>
+      </div>
+    </div>
+
+    <div id="chat" class="chat-container">
+      <div class="bot-msg">
+        <strong>Ready for Analysis</strong><br>
+        Paste text or upload a file (PDF, TXT, or Image). I'll scan for risks and hidden clauses.
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input type="file" id="file-upload" accept=".pdf, .txt, .jpg, .png, .jpeg" style="display:none">
+      
+      <textarea id="input" placeholder="Paste contract text or upload a file..."></textarea>
+      
+      <div class="button-row">
+        <button class="secondary-btn" onclick="document.getElementById('file-upload').click()">
+          📎 Upload File
+        </button>
+        
+        <div class="button-wrapper">
+          <button class="btn-analyze" onclick="send()">
+            <span>Analyze Contract</span>
+            <span class="arrow-icon">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
