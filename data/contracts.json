@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "filename": "manual_input",
+    "content": "contract body",
+    "analysis": "analysis body"
+  },
+  {
+    "id": 2,
+    "filename": "manual_input",
+    "content": "This is a sample legal contract.",
+    "analysis": "ANALYSIS: This is a sample leg"
+  }
+]

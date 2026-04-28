@@ -1,0 +1,8 @@
+[
+  {
+    "id": 1,
+    "filename": "manual_input",
+    "content": "contract body",
+    "analysis": "analysis body"
+  }
+]

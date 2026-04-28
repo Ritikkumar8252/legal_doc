@@ -1,0 +1,7 @@
+flask
+
+openai
+
+pypdf2
+
+python-docx

@@ -1,0 +1,7 @@
+venv/
+.env
+__pycache__/
+uploads/
+database.db
+node_modules/
+dist/
