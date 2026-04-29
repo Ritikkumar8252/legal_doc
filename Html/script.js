@@ -1,121 +1,101 @@
-async function send() {
-  const input = document.getElementById("input");
-  const btn = document.querySelector(".btn-analyze");
-  const text = input.value.trim();
-  
-  if (!text) return;
+const fileInput = document.getElementById("file-upload");
 
-  
-  btn.disabled = true;
-  btn.innerHTML = '<span>Analyzing...</span>';
-  btn.style.opacity = "0.7";
+if (fileInput) {
+  fileInput.addEventListener("change", function (event) {
+    const file = event.target.files[0];
+    if (file) {
+      uploadFile(file);
+    }
+  });
+}
 
-  
-  addMsg(text, "user");
-  input.value = "";
-
-  
-  const bot = addMsg("Scanning document for liabilities...", "bot-msg");
+async function uploadFile(file) {
+  const status = addMsg(`Uploading ${escapeHtml(file.name)}...`, "bot-msg");
+  const formData = new FormData();
+  formData.append("file", file);
 
   try {
-    const res = await fetch("http://127.0.0.1:5000/chat", {
+    const res = await fetch("/upload", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text })
+      body: formData
     });
-
-    if (!res.ok) throw new Error("Network response was not ok");
-
     const data = await res.json();
-    
-    
-    bot.innerHTML = data.reply; 
 
+    if (!res.ok) {
+      throw new Error(data.error || "Upload failed");
+    }
+
+    document.getElementById("input").value = data.content;
+    status.innerHTML = `Loaded <strong>${escapeHtml(data.filename)}</strong>. Review the extracted text, then analyze it.`;
   } catch (err) {
-    bot.innerText = "Connection Error: Please ensure your Flask/Node server is running on port 5000.";
-    bot.style.color = "#ef4444";
-    console.error("Fetch error:", err);
-  } finally {
-    
-    btn.disabled = false;
-    btn.innerHTML = '<span>Analyze Contract</span><span class="arrow-icon">→</span>';
-    btn.style.opacity = "1";
+    status.innerText = err.message || "Unable to upload this file.";
+    status.style.color = "#ef4444";
+    console.error("Upload error:", err);
   }
 }
 
-document.getElementById('file-upload').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-
-  if (file.type === "text/plain") {
-    reader.onload = function(e) {
-      document.getElementById('input').value = e.target.result;
-      addMsg(`Successfully uploaded: ${file.name}`, "bot-msg");
-    };
-    reader.readAsText(file);
-  } 
-  else if (file.type === "application/pdf") {
-    addMsg(`PDF Detected: ${file.name}. (Parsing PDF content...)`, "bot-msg");
-    
-  } 
-  else if (file.type.startsWith("image/")) {
-    addMsg(`Image Detected: ${file.name}. (Running OCR...)`, "bot-msg");
-    
-  }
-});
-
 async function send() {
   const input = document.getElementById("input");
   const btn = document.querySelector(".btn-analyze");
   const text = input.value.trim();
-  
+
   if (!text) return;
 
   btn.disabled = true;
-  btn.innerHTML = '<span>Analyzing...</span>';
+  btn.innerHTML = "<span>Analyzing...</span>";
+  btn.style.opacity = "0.7";
 
-  addMsg("Analyzing content...", "bot-msg");
+  const bot = addMsg("Analyzing content...", "bot-msg");
 
   try {
-    const res = await fetch("http://127.0.0.1:5000/chat", {
+    const res = await fetch("/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        message: text,
-        fileName: document.getElementById('file-upload').files[0]?.name || "Text Paste"
-      })
+      body: JSON.stringify({ contract: text })
     });
-
     const data = await res.json();
-    
-    const messages = document.querySelectorAll('.bot-msg');
-    messages[messages.length - 1].innerHTML = data.reply;
 
+    if (!res.ok) {
+      throw new Error(data.error || "Analysis failed");
+    }
+
+    bot.innerHTML = formatAnalysis(data.analysis);
   } catch (err) {
-    console.error(err);
+    bot.innerText = err.message || "Unable to connect to the backend.";
+    bot.style.color = "#ef4444";
+    console.error("Analyze error:", err);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<span>Analyze Contract</span><span class="arrow-icon">→</span>';
+    btn.innerHTML = '<span>Analyze Contract</span><span class="arrow-icon">&rarr;</span>';
+    btn.style.opacity = "1";
   }
 }
 
 function addMsg(text, type) {
   const chat = document.getElementById("chat");
   const div = document.createElement("div");
-  
-  
-  div.className = type; 
+
+  div.className = type;
   div.innerHTML = text;
-  
+
   chat.appendChild(div);
-  
-  
   chat.scrollTo({
     top: chat.scrollHeight,
-    behavior: 'smooth'
+    behavior: "smooth"
   });
-  
+
   return div;
+}
+
+function formatAnalysis(text) {
+  return escapeHtml(text).replace(/\n/g, "<br>");
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
