@@ -10,5 +10,50 @@
     "filename": "manual_input",
     "content": "This is a sample legal contract.",
     "analysis": "ANALYSIS: This is a sample leg"
+  },
+  {
+    "id": 3,
+    "filename": "admissionletter_IITM.pdf",
+    "content": "B.S . in D ata Scienc e and\nApplications \nIndian Institute of Technology , Madras 600036\nChennai\nTo\nSub:  \nDear\nGreetings from IIT Madras!\nProf. Andr ew Thangaraj\nCoor dinator\nIIT Madras B.S. Degr ee Pr ogramProf. Vignesh Muthuvijayan\nCoor dinator\nIIT Madras B.S. Degr ee Pr ogram\nLetter of Admission to the Foundation level of B.S. in Data Science and\nApplications from llT Madras \nWe are pleased to inform you that you are admitted to the Foundation level of the \nB.S. Degree in Data Science and  Applications from IIT  Madras under the JEE categor y. \nWe congratulate you on this and invite you to complete the remaining formalities of the \nregistration process.  Admission will be valid for the 3 terms of \n    If you fail to register to courses in the Foundation level within \nthese 3 terms, your admission will lapse.RITIK KUMAR\nRITIK KUMAR\nritikkumar2026bgs@gmail.com\n12 June  2024\nMay 2024, September 2024 \nand January 2025.",
+    "analysis": {
+      "document_title": "IIT Madras B.S. Data Science Admission Letter",
+      "overview": "This letter confirms the admission of Ritik Kumar to the Foundation level of the B.S. Degree in Data Science and Applications at IIT Madras, under the JEE category. The student is congratulated and invited to complete the registration formalities. It is crucial to register for courses within three specified terms, otherwise, the admission will lapse.",
+      "important_points": [
+        "Admission to the Foundation level of B.S. in Data Science and Applications from IIT Madras.",
+        "Admission is under the JEE category.",
+        "The admitted student must complete remaining registration formalities.",
+        "Admission is valid for three specific terms: May 2024, September 2024, and January 2025.",
+        "Failure to register for courses within these three terms will result in the admission lapsing."
+      ],
+      "risks": [
+        {
+          "level": "High",
+          "title": "Admission Lapses",
+          "explanation": "If the admitted student fails to register for courses in the Foundation level within the specified three terms (May 2024, September 2024, and January 2025), their admission to the program will become invalid."
+        }
+      ],
+      "obligations": [
+        {
+          "party": "RITIK KUMAR",
+          "duty": "Complete the remaining formalities of the registration process."
+        },
+        {
+          "party": "RITIK KUMAR",
+          "duty": "Register for courses in the Foundation level within the terms of May 2024, September 2024, or January 2025."
+        }
+      ],
+      "dates": [
+        {
+          "label": "Letter Date",
+          "value": "12 June 2024"
+        },
+        {
+          "label": "Admission Validity Terms",
+          "value": "May 2024, September 2024 and January 2025"
+        }
+      ],
+      "recommendation": "Promptly complete all registration formalities and ensure you register for courses in the Foundation level within one of the three specified terms (May 2024, September 2024, or January 2025) to avoid your admission lapsing.",
+      "confidence_note": "The document text provided was clear and complete for summarization."
+    }
   }
 ]

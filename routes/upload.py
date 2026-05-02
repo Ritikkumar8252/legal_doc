@@ -57,9 +57,9 @@ def upload_file():
             "error": str(exc)
         }), 400
 
-    except Exception:
+    except Exception as exc:
         return jsonify({
-            "error": "Unable to process the uploaded file"
+            "error": f"Unable to process the uploaded file: {exc}"
         }), 500
 
     if not text.strip():

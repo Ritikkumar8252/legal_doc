@@ -1,4 +1,5 @@
 const fileInput = document.getElementById("file-upload");
+let currentFileName = "Pasted Text";
 
 if (fileInput) {
   fileInput.addEventListener("change", function (event) {
@@ -26,6 +27,7 @@ async function uploadFile(file) {
     }
 
     document.getElementById("input").value = data.content;
+    currentFileName = data.filename;
     status.innerHTML = `Loaded <strong>${escapeHtml(data.filename)}</strong>. Review the extracted text, then analyze it.`;
   } catch (err) {
     status.innerText = err.message || "Unable to upload this file.";
@@ -48,25 +50,30 @@ async function send() {
   const bot = addMsg("Analyzing content...", "bot-msg");
 
   try {
-    const res = await fetch("/analyze", {
+    const res = await fetch("/summarize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contract: text })
+      body: JSON.stringify({
+        contract: text,
+        filename: currentFileName
+      })
     });
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.error || "Analysis failed");
+      throw new Error(data.error || "Summary failed");
     }
 
-    bot.innerHTML = formatAnalysis(data.analysis);
+    localStorage.setItem("latestLegalSummary", JSON.stringify(data));
+    bot.innerHTML = "Summary ready. Opening dashboard...";
+    window.location.href = "/dashboard.html";
   } catch (err) {
     bot.innerText = err.message || "Unable to connect to the backend.";
     bot.style.color = "#ef4444";
     console.error("Analyze error:", err);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<span>Analyze Contract</span><span class="arrow-icon">&rarr;</span>';
+    btn.innerHTML = '<span>Summarize Document</span><span class="arrow-icon">&rarr;</span>';
     btn.style.opacity = "1";
   }
 }

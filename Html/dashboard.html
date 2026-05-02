@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LegalTech AI - Summary Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="logo">LegalTech AI</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="app.html">Upload</a>
+      <a href="how.html">How It Works</a>
+    </div>
+  </nav>
+
+  <main class="dashboard-shell">
+    <section class="dashboard-header">
+      <div>
+        <div class="badge">DOCUMENT SUMMARY</div>
+        <h1 id="document-title">Summary Dashboard</h1>
+        <p id="document-meta">Upload a document to generate a dashboard.</p>
+      </div>
+      <button class="secondary-btn" onclick="window.location.href='app.html'">New Upload</button>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-panel overview-panel">
+        <h2>Overview</h2>
+        <p id="overview">No summary available yet.</p>
+      </article>
+
+      <article class="dashboard-panel">
+        <h2>Important Points</h2>
+        <ul id="important-points"></ul>
+      </article>
+
+      <article class="dashboard-panel">
+        <h2>Risk Alerts</h2>
+        <div id="risks" class="risk-list"></div>
+      </article>
+
+      <article class="dashboard-panel">
+        <h2>Obligations</h2>
+        <div id="obligations" class="compact-list"></div>
+      </article>
+
+      <article class="dashboard-panel">
+        <h2>Dates & Deadlines</h2>
+        <div id="dates" class="compact-list"></div>
+      </article>
+
+      <article class="dashboard-panel recommendation-panel">
+        <h2>Recommendation</h2>
+        <p id="recommendation"></p>
+        <p id="confidence-note" class="dashboard-note"></p>
+      </article>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
