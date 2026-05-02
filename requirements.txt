@@ -1,7 +1,7 @@
-flask
-
-openai
-
-pypdf2
-
+Flask
+gunicorn
 python-docx
+PyPDF2
+pdfplumber
+python-dotenv
+requests
