@@ -631,6 +631,12 @@ body {
   font-size: 0.9rem;
 }
 
+.dashboard-risk-text {
+  margin-top: 12px;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
 @media (max-width: 760px) {
   .dashboard-header,
   .button-row {

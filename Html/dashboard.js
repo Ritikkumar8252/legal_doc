@@ -10,29 +10,21 @@ function renderDashboard(data) {
   setText("document-title", summary.document_title || "Document Summary");
   setText("document-meta", `Source: ${data.filename || "Uploaded document"} | Report ID: ${data.id || "Not saved"}`);
   setText("overview", summary.overview || "No overview returned.");
-  setText("recommendation", summary.recommendation || "No recommendation returned.");
+  renderCategory("payment", summary.payment);
+  renderCategory("work-scope", summary.work_scope);
+  renderCategory("ownership", summary.ownership);
+  renderCategory("deadlines", summary.deadlines);
+  renderCategory("ending", summary.ending_terms);
+  setText("final-advice", summary.final_advice || "No final advice returned.");
   setText("confidence-note", summary.confidence_note || "");
 
-  renderList("important-points", summary.important_points);
   renderRisks(summary.risks);
-  renderKeyValueList("obligations", summary.obligations, "party", "duty");
-  renderKeyValueList("dates", summary.dates, "label", "value");
+  renderList("suggestions", summary.suggestions);
 }
 
-function renderList(id, items) {
-  const container = document.getElementById(id);
-  container.innerHTML = "";
-
-  if (!Array.isArray(items) || items.length === 0) {
-    container.appendChild(createEmpty("No items found."));
-    return;
-  }
-
-  items.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    container.appendChild(li);
-  });
+function renderCategory(idPrefix, section) {
+  setText(`${idPrefix}-summary`, section?.summary || "Not specified.");
+  setText(`${idPrefix}-risk`, `Risk: ${section?.risk || "Not specified."}`);
 }
 
 function renderRisks(risks) {
@@ -63,27 +55,19 @@ function renderRisks(risks) {
   });
 }
 
-function renderKeyValueList(id, items, labelKey, valueKey) {
+function renderList(id, items) {
   const container = document.getElementById(id);
   container.innerHTML = "";
 
   if (!Array.isArray(items) || items.length === 0) {
-    container.appendChild(createEmpty("Nothing specified."));
+    container.appendChild(createEmpty("No suggestions found."));
     return;
   }
 
   items.forEach((item) => {
-    const row = document.createElement("div");
-    row.className = "compact-row";
-
-    const label = document.createElement("strong");
-    label.textContent = item[labelKey] || "Not specified";
-
-    const value = document.createElement("span");
-    value.textContent = item[valueKey] || "Not specified";
-
-    row.append(label, value);
-    container.appendChild(row);
+    const li = document.createElement("li");
+    li.textContent = item;
+    container.appendChild(li);
   });
 }
 

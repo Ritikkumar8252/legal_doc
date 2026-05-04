@@ -119,12 +119,40 @@ def summarize_contract(contract_text):
     prompt = f"""
 You are a legal document summarizer for a dashboard.
 Read the uploaded document text and return only valid JSON.
+Base the dashboard on these contract analysis categories:
+1. Payment
+2. Work scope
+3. Ownership
+4. Deadlines
+5. Contract ending terms
+6. Risks
+7. Suggestions
+8. Final advice
 
 JSON format:
 {{
   "document_title": "Short title for the document",
   "overview": "Plain English summary in 2-4 sentences",
-  "important_points": ["Point 1", "Point 2", "Point 3"],
+  "payment": {{
+    "summary": "Payment terms in simple words",
+    "risk": "Payment risk or Not specified"
+  }},
+  "work_scope": {{
+    "summary": "Scope of work in simple words",
+    "risk": "Scope risk or Not specified"
+  }},
+  "ownership": {{
+    "summary": "Ownership or IP terms in simple words",
+    "risk": "Ownership risk or Not specified"
+  }},
+  "deadlines": {{
+    "summary": "Deadlines in simple words",
+    "risk": "Deadline risk or Not specified"
+  }},
+  "ending_terms": {{
+    "summary": "Termination/ending terms in simple words",
+    "risk": "Ending terms risk or Not specified"
+  }},
   "risks": [
     {{
       "level": "Low, Medium, or High",
@@ -132,19 +160,8 @@ JSON format:
       "explanation": "Why this matters"
     }}
   ],
-  "obligations": [
-    {{
-      "party": "Who must do it",
-      "duty": "What they must do"
-    }}
-  ],
-  "dates": [
-    {{
-      "label": "Date or deadline name",
-      "value": "Exact date/deadline or Not specified"
-    }}
-  ],
-  "recommendation": "Final practical advice before signing",
+  "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"],
+  "final_advice": "Final practical advice before signing",
   "confidence_note": "Mention if the document text was incomplete or unclear"
 }}
 
