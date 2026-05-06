@@ -83,7 +83,9 @@ function normalizeSummary(report) {
       document_type: "Legal Document",
       tags: ["Legal Document"],
       overview: summary,
+      plain_language_summary: summary,
       eli15_summary: summary,
+      top_takeaways: [],
       key_clauses: [],
       risks: [],
       dates: [],
@@ -92,6 +94,8 @@ function normalizeSummary(report) {
       contract_duration: "N/A",
       duration_note: "Not specified",
       suggestions: [],
+      action_items: [],
+      questions_to_ask: [],
       final_advice: "Review the full analysis before signing.",
       confidence_note: ""
     };
@@ -110,7 +114,9 @@ function normalizeSummary(report) {
     document_type: summary.document_type || "Legal Document",
     tags: Array.isArray(summary.tags) && summary.tags.length ? summary.tags : [summary.document_type || "Legal Document"],
     overview: summary.overview || "No overview returned.",
+    plain_language_summary: summary.plain_language_summary || summary.overview || "No simple summary returned.",
     eli15_summary: summary.eli15_summary || summary.final_advice || "No simple explanation returned.",
+    top_takeaways: asList(summary.top_takeaways),
     key_clauses: clauses,
     risks,
     dates,
@@ -119,6 +125,8 @@ function normalizeSummary(report) {
     contract_duration: summary.contract_duration || "N/A",
     duration_note: summary.duration_note || "Not specified",
     suggestions: Array.isArray(summary.suggestions) ? summary.suggestions : [],
+    action_items: asList(summary.action_items),
+    questions_to_ask: asList(summary.questions_to_ask),
     final_advice: summary.final_advice || "Review the document carefully before signing.",
     confidence_note: summary.confidence_note || "",
     risk_counts: summary.risk_counts || riskCounts,
@@ -146,10 +154,11 @@ function renderDashboard(report) {
   setStat(3, stats.contract_duration || summary.contract_duration, stats.duration_note || summary.duration_note);
 
   setText(".summary-text", summary.overview);
-  setText(".eli15-label", "Explain Like I am 15");
-  setText(".eli15-text", summary.eli15_summary);
+  setText(".eli15-label", "In simple words");
+  setText(".eli15-text", summary.plain_language_summary || summary.eli15_summary);
 
   renderTags(summary.tags);
+  renderTakeaways(summary.top_takeaways);
   renderClauses(clauses);
   renderRisks(risks);
   renderDates(summary.dates);
@@ -199,7 +208,7 @@ function renderClauses(clauses) {
 
     const desc = document.createElement("div");
     desc.className = "clause-desc";
-    desc.textContent = clause.description || "Not specified.";
+    desc.textContent = clauseText(clause);
 
     const value = document.createElement("div");
     value.className = "clause-value";
@@ -239,7 +248,9 @@ function renderRisks(risks) {
 
     const desc = document.createElement("div");
     desc.className = "risk-desc";
-    desc.textContent = risk.explanation || "No explanation returned.";
+    desc.textContent = risk.what_to_do
+      ? `${risk.explanation || "No explanation returned."} Next: ${risk.what_to_do}`
+      : risk.explanation || "No explanation returned.";
 
     header.append(name, badge);
     item.append(header, desc);
@@ -290,23 +301,20 @@ function renderSuggestions(summary) {
 
   if (!body) return;
 
-  if (title) title.textContent = "Suggestions";
-  if (status) status.textContent = "Backend";
+  if (title) title.textContent = "What To Do Next";
+  if (status) status.textContent = "Action Plan";
 
   body.innerHTML = "";
 
-  const list = document.createElement("ul");
-  list.className = "suggestion-list";
+  const actions = summary.action_items.length
+    ? summary.action_items
+    : summary.suggestions;
 
-  const suggestions = summary.suggestions.length
-    ? summary.suggestions
-    : ["No suggestions returned."];
+  body.appendChild(sectionList("Next steps", actions.length ? actions : ["No next steps returned."]));
 
-  suggestions.forEach((suggestion) => {
-    const item = document.createElement("li");
-    item.textContent = suggestion;
-    list.appendChild(item);
-  });
+  if (summary.questions_to_ask.length) {
+    body.appendChild(sectionList("Questions to ask", summary.questions_to_ask));
+  }
 
   const advice = document.createElement("div");
   advice.className = "advice-block";
@@ -316,7 +324,51 @@ function renderSuggestions(summary) {
   note.className = "empty-state";
   note.textContent = summary.confidence_note;
 
-  body.append(list, advice, note);
+  body.append(advice, note);
+}
+
+function renderTakeaways(takeaways) {
+  const summaryBody = document.querySelector(".content-left .card:first-child .card-body");
+  if (!summaryBody) return;
+
+  const old = summaryBody.querySelector(".takeaway-list");
+  if (old) old.remove();
+
+  if (!takeaways.length) return;
+
+  const list = document.createElement("div");
+  list.className = "takeaway-list";
+
+  takeaways.slice(0, 3).forEach((takeaway) => {
+    const item = document.createElement("div");
+    item.className = "takeaway-item";
+    item.textContent = takeaway;
+    list.appendChild(item);
+  });
+
+  const simpleBlock = summaryBody.querySelector(".eli15-block");
+  summaryBody.insertBefore(list, simpleBlock);
+}
+
+function sectionList(title, items) {
+  const section = document.createElement("div");
+  section.className = "action-section";
+
+  const heading = document.createElement("div");
+  heading.className = "action-heading";
+  heading.textContent = title;
+
+  const list = document.createElement("ul");
+  list.className = "suggestion-list";
+
+  items.forEach((text) => {
+    const item = document.createElement("li");
+    item.textContent = text;
+    list.appendChild(item);
+  });
+
+  section.append(heading, list);
+  return section;
 }
 
 function renderRiskScore(score, counts) {
@@ -403,6 +455,20 @@ function legacyClauses(summary) {
     }));
 }
 
+function clauseText(clause) {
+  const parts = [clause.description];
+
+  if (clause.why_it_matters) {
+    parts.push(`Why it matters: ${clause.why_it_matters}`);
+  }
+
+  if (clause.action) {
+    parts.push(`Check: ${clause.action}`);
+  }
+
+  return parts.filter(Boolean).join(" ");
+}
+
 function legacyDates(summary) {
   if (!summary.deadlines?.summary) {
     return [];
@@ -423,6 +489,10 @@ function countRisks(risks) {
     else counts.medium += 1;
     return counts;
   }, { high: 0, medium: 0, low: 0 });
+}
+
+function asList(value) {
+  return Array.isArray(value) ? value.filter(Boolean) : [];
 }
 
 function estimateRiskScore(counts) {

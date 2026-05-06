@@ -147,17 +147,17 @@ def _estimate_clarity_score(contract_text):
     return max(45, 90 - penalty)
 
 
+def _safe_list(value):
+    return value if isinstance(value, list) else []
+
+
 def _normalize_dashboard_summary(summary, contract_text):
     if not isinstance(summary, dict):
         summary = {}
 
-    risks = summary.get("risks")
-    if not isinstance(risks, list):
-        risks = []
+    risks = _safe_list(summary.get("risks"))
 
-    key_clauses = summary.get("key_clauses")
-    if not isinstance(key_clauses, list):
-        key_clauses = []
+    key_clauses = _safe_list(summary.get("key_clauses"))
 
     legacy_sections = [
         ("Payment", "pay", summary.get("payment")),
@@ -177,9 +177,7 @@ def _normalize_dashboard_summary(summary, contract_text):
                     "value": section.get("risk", "No risk noted"),
                 })
 
-    dates = summary.get("dates")
-    if not isinstance(dates, list):
-        dates = []
+    dates = _safe_list(summary.get("dates"))
 
     if not dates and isinstance(summary.get("deadlines"), dict):
         dates.append({
@@ -201,6 +199,7 @@ def _normalize_dashboard_summary(summary, contract_text):
     summary.setdefault("document_title", "Document Analysis")
     summary.setdefault("document_type", "Legal Document")
     summary.setdefault("overview", "No overview returned.")
+    summary.setdefault("plain_language_summary", summary["overview"])
     summary.setdefault("eli15_summary", summary.get("final_advice", "No simple explanation returned."))
     summary.setdefault("tags", [summary["document_type"]])
     summary["key_clauses"] = key_clauses
@@ -210,9 +209,21 @@ def _normalize_dashboard_summary(summary, contract_text):
     summary["clarity_score"] = clarity_score
     summary.setdefault("contract_duration", "N/A")
     summary.setdefault("duration_note", "Not specified")
-    summary.setdefault("suggestions", [])
+    summary["top_takeaways"] = _safe_list(summary.get("top_takeaways"))
+    summary["suggestions"] = _safe_list(summary.get("suggestions"))
+    summary["action_items"] = _safe_list(summary.get("action_items"))
+    summary["questions_to_ask"] = _safe_list(summary.get("questions_to_ask"))
     summary.setdefault("final_advice", "Review the document carefully before signing.")
     summary.setdefault("confidence_note", "")
+
+    if not summary["top_takeaways"]:
+        summary["top_takeaways"] = [
+            summary["overview"],
+        ]
+
+    if not summary["action_items"]:
+        summary["action_items"] = summary["suggestions"]
+
     summary["risk_counts"] = counts
     summary["stats"] = {
         "key_clauses_found": len(key_clauses),
@@ -228,26 +239,35 @@ def _normalize_dashboard_summary(summary, contract_text):
 
 def summarize_contract(contract_text):
     prompt = f"""
-You are a legal document summarizer for a static dashboard UI.
+You are a legal document explainer for a static dashboard UI.
 Read the uploaded document text and return only valid JSON.
+Your reader is a freelancer, student, tenant, or small business owner with no legal training.
+Write like a careful friend who understands contracts: clear, direct, and practical.
+
 The JSON must directly power these dashboard sections:
 - page header and document metadata
 - four stat cards
-- AI summary and Explain Like I am 15 block
+- AI summary and plain-language explanation block
 - document type tags
 - key clauses list
 - risk score ring
 - risk alerts list
 - key dates timeline
-- suggestions and final advice
+- takeaways, next steps, questions to ask, and final advice
 
 JSON format:
 {{
   "document_title": "Short title for the document",
   "document_type": "Service Agreement, NDA, Lease, Admission Letter, Policy, or other best label",
   "tags": ["Service Agreement", "SaaS", "B2B"],
-  "overview": "Plain English summary in 2-4 sentences",
+  "overview": "Plain English summary in 2-3 short sentences",
+  "plain_language_summary": "Even simpler summary using everyday words",
   "eli15_summary": "Very simple explanation for a 15-year-old",
+  "top_takeaways": [
+    "The most important thing the user should know",
+    "Second important thing",
+    "Third important thing"
+  ],
   "risk_score": 60,
   "clarity_score": 62,
   "contract_duration": "12 mo, N/A, or another compact value",
@@ -256,7 +276,9 @@ JSON format:
     {{
       "type": "pay, term, liability, nda, ip, renewal, or other",
       "title": "Short clause label",
-      "description": "What the clause means in simple words",
+      "description": "What this clause says in simple words",
+      "why_it_matters": "Why the user should care",
+      "action": "What the user should check or ask about",
       "value": "Compact value shown at right, such as INR 5000/mo, 30 days, Shared, or Not specified"
     }}
   ],
@@ -284,7 +306,8 @@ JSON format:
     {{
       "level": "Low, Medium, or High",
       "title": "Risk title",
-      "explanation": "Why this matters"
+      "explanation": "What can go wrong in simple words",
+      "what_to_do": "One practical step the user can take"
     }}
   ],
   "dates": [
@@ -295,17 +318,29 @@ JSON format:
     }}
   ],
   "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"],
+  "action_items": ["Concrete next step 1", "Concrete next step 2", "Concrete next step 3"],
+  "questions_to_ask": ["Question to ask the other party before signing"],
   "final_advice": "Final practical advice before signing",
   "confidence_note": "Mention if the document text was incomplete or unclear"
 }}
 
 Rules:
+- Use short sentences. Prefer simple words over legal terms.
+- Explain every money amount, deadline, penalty, ownership term, auto-renewal, confidentiality duty, and liability cap if present.
+- For each key clause, answer: what it says, why it matters, and what to check.
+- For each risk, explain the real-world consequence and one practical next step.
+- Make action_items specific and doable. Start each with a verb like Ask, Confirm, Save, Check, Negotiate, or Clarify.
+- Make questions_to_ask sound like real questions the user can copy into an email.
 - Use INR formatting when the document uses rupees.
 - Keep key_clauses to 4-8 dashboard-friendly items.
+- Keep top_takeaways to exactly 3 items.
+- Keep action_items to 3-5 items.
+- Keep questions_to_ask to 2-4 items.
 - Use risk_score as a safety score from 0 to 100, where lower means more risky.
 - Use clarity_score from 0 to 100, where higher means easier to understand.
 - If data is missing, use "Not specified" instead of inventing facts.
-Keep language simple. Do not give legal advice as a lawyer.
+- Do not say "consult a lawyer" as the main answer. Give practical document-specific checks first.
+- Do not give legal advice as a lawyer.
 
 Document:
 {contract_text}

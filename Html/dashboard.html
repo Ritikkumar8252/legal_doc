@@ -271,6 +271,21 @@
   }
   .eli15-text { font-size: 13px; color: var(--text); }
 
+  .takeaway-list {
+    display: grid;
+    gap: 8px;
+    margin: 16px 0;
+  }
+
+  .takeaway-item {
+    background: rgba(34,211,238,0.08);
+    border: 1px solid rgba(34,211,238,0.18);
+    border-radius: 3px;
+    color: #dffbff;
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
   /* === KEY CLAUSES === */
   .clause-list { display: flex; flex-direction: column; gap: 10px; }
 
@@ -451,6 +466,19 @@
     padding-left: 18px;
     color: #cccbd8;
     font-size: 13px;
+  }
+
+  .action-section + .action-section {
+    margin-top: 16px;
+  }
+
+  .action-heading {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
   }
 
   .advice-block {
