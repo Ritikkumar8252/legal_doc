@@ -1,86 +1,767 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LegalTech AI - Summary Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LexAI — Legal Document Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: #2a2a35;
+    --accent: #c9a84c;
+    --accent2: #e8c97a;
+    --danger: #e05252;
+    --warn: #e09a2f;
+    --ok: #4caf7d;
+    --text: #f0eff8;
+    --muted: #7a798a;
+    --subtle: #3a3a4a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* === LAYOUT === */
+  .app { display: grid; grid-template-columns: 240px 1fr; grid-template-rows: 56px 1fr; min-height: 100vh; }
+
+  /* === TOPBAR === */
+  .topbar {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: inline-block; }
+
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+  .badge {
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--accent2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--warn));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #000;
+  }
+
+  /* === SIDEBAR === */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-section {
+    padding: 0 16px;
+    margin-top: 16px;
+    margin-bottom: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { border-left-color: var(--accent); background: rgba(201,168,76,0.07); color: var(--text); font-weight: 500; }
+  .nav-item .icon { width: 16px; text-align: center; font-size: 14px; }
+
+  .upload-btn {
+    margin: 16px;
+    margin-top: auto;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 10px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background 0.2s;
+    letter-spacing: 0.2px;
+  }
+  .upload-btn:hover { background: var(--accent2); }
+
+  /* === MAIN === */
+  .main {
+    background: var(--bg);
+    padding: 28px 32px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* === PAGE HEADER === */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+  .page-subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  .doc-meta {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .doc-meta span { color: var(--accent2); }
+
+  /* === STATS ROW === */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.gold::before { background: var(--accent); }
+  .stat-card.red::before { background: var(--danger); }
+  .stat-card.green::before { background: var(--ok); }
+  .stat-card.orange::before { background: var(--warn); }
+
+  .stat-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 8px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; line-height: 1; }
+  .stat-value.gold { color: var(--accent2); }
+  .stat-value.red { color: var(--danger); }
+  .stat-value.green { color: var(--ok); }
+  .stat-value.orange { color: var(--warn); }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* === GRID === */
+  .content-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+  .content-left { display: flex; flex-direction: column; gap: 20px; }
+
+  /* === CARDS === */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .card-body { padding: 20px; }
+
+  /* === SUMMARY === */
+  .summary-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #cccbd8;
+    border-left: 2px solid var(--accent);
+    padding-left: 16px;
+    font-style: italic;
+  }
+
+  .eli15-block {
+    margin-top: 16px;
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 3px;
+    padding: 14px 16px;
+  }
+  .eli15-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .eli15-text { font-size: 13px; color: var(--text); }
+
+  /* === KEY CLAUSES === */
+  .clause-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .clause-item {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    align-items: start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    transition: border-color 0.15s;
+  }
+  .clause-item:hover { border-color: var(--subtle); }
+
+  .clause-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 2px;
+    font-weight: 500;
+    width: fit-content;
+  }
+  .clause-type.pay { background: rgba(76,175,125,0.15); color: var(--ok); }
+  .clause-type.term { background: rgba(224,82,82,0.15); color: var(--danger); }
+  .clause-type.liability { background: rgba(224,154,47,0.15); color: var(--warn); }
+  .clause-type.nda { background: rgba(201,168,76,0.15); color: var(--accent2); }
+  .clause-type.ip { background: rgba(150,100,220,0.15); color: #b08adf; }
+  .clause-type.renewal { background: rgba(224,82,82,0.15); color: var(--danger); }
+
+  .clause-desc { font-size: 13px; color: var(--text); padding-top: 1px; }
+  .clause-value { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent2); white-space: nowrap; }
+
+  /* === RISK PANEL === */
+  .risk-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .risk-item {
+    padding: 13px 15px;
+    border-radius: 3px;
+    border-left: 3px solid;
+    background: var(--surface2);
+    animation: fadeUp 0.5s ease both;
+  }
+  .risk-item.high { border-color: var(--danger); }
+  .risk-item.med { border-color: var(--warn); }
+  .risk-item.low { border-color: var(--ok); }
+
+  .risk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .risk-name { font-size: 13px; font-weight: 500; }
+  .risk-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+  .risk-badge.high { background: rgba(224,82,82,0.2); color: var(--danger); }
+  .risk-badge.med { background: rgba(224,154,47,0.2); color: var(--warn); }
+  .risk-badge.low { background: rgba(76,175,125,0.2); color: var(--ok); }
+
+  .risk-desc { font-size: 12px; color: var(--muted); }
+
+  /* === CLAUSE TYPE TAGS === */
+  .doc-type-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .doc-type-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .doc-type-tag:hover, .doc-type-tag.active { border-color: var(--accent); color: var(--accent2); background: rgba(201,168,76,0.07); }
+
+  /* === TIMELINE === */
+  .timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 18px; top: 24px; bottom: 24px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .tl-item { display: flex; gap: 16px; padding: 12px 0; position: relative; }
+  .tl-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    margin-top: 4px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .tl-dot.done { background: var(--accent); }
+  .tl-dot.warn { border-color: var(--warn); background: var(--warn); }
+  .tl-content { flex: 1; }
+  .tl-title { font-size: 13px; font-weight: 500; }
+  .tl-date { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+
+  /* === SCORE RING === */
+  .score-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    gap: 12px;
+  }
+  .ring-container { position: relative; width: 100px; height: 100px; }
+  .ring-container svg { transform: rotate(-90deg); }
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+  }
+  .ring-num { font-size: 24px; font-weight: 700; color: var(--warn); }
+  .ring-label { font-size: 9px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; }
+
+  .score-legend { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+  .legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+  .legend-bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; margin: 0 10px; }
+  .legend-bar { height: 4px; border-radius: 2px; }
+  .legend-val { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  /* === UPLOAD ZONE === */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 4px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+  }
+  .upload-zone:hover { border-color: var(--accent); background: rgba(201,168,76,0.04); }
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+  .upload-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .upload-hint { font-size: 12px; color: var(--muted); }
+
+  /* === PROGRESS BAR === */
+  .progress-wrap { margin-top: 12px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-family: 'IBM Plex Mono', monospace; }
+  .progress-bg { background: var(--border); height: 4px; border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); animation: grow 1.2s ease both; }
+
+  /* === LANG BADGE === */
+  .lang-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .lang-tag {
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .lang-tag:hover, .lang-tag.active { border-color: var(--accent); color: var(--accent2); }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes grow {
+    from { width: 0; }
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 0.05s; }
+  .stat-card:nth-child(2) { animation-delay: 0.1s; }
+  .stat-card:nth-child(3) { animation-delay: 0.15s; }
+  .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--subtle); border-radius: 3px; }
+</style>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="logo">LegalTech AI</div>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="app.html">Upload</a>
-      <a href="how.html">How It Works</a>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      LexAI
     </div>
-  </nav>
+    <span class="badge">Beta v0.1</span>
+    <div class="topbar-right">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">service_agreement_2024.pdf</div>
+      <div class="badge" style="background:rgba(76,175,125,0.1);border-color:rgba(76,175,125,0.3);color:var(--ok)">● ANALYZED</div>
+      <div class="avatar">AK</div>
+    </div>
+  </header>
 
-  <main class="dashboard-shell">
-    <section class="dashboard-header">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <div class="nav-item active"><span class="icon">⚡</span> Dashboard</div>
+    <div class="nav-item"><span class="icon">📄</span> Documents</div>
+    <div class="nav-item"><span class="icon">🔍</span> Analysis</div>
+    <div class="nav-item"><span class="icon">⚠️</span> Risk Report</div>
+
+    <div class="sidebar-section">Tools</div>
+    <div class="nav-item"><span class="icon">🌐</span> Translate</div>
+    <div class="nav-item"><span class="icon">📖</span> ELI-15 Mode</div>
+    <div class="nav-item"><span class="icon">📊</span> Compare Docs</div>
+
+    <div class="sidebar-section">History</div>
+    <div class="nav-item"><span class="icon">📋</span> NDA_draft.pdf</div>
+    <div class="nav-item"><span class="icon">📋</span> lease_agr.docx</div>
+    <div class="nav-item"><span class="icon">📋</span> tos_v2.pdf</div>
+
+    <button class="upload-btn">＋ Upload Document</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
       <div>
-        <div class="badge">DOCUMENT SUMMARY</div>
-        <h1 id="document-title">Summary Dashboard</h1>
-        <p id="document-meta">Upload a document to generate a dashboard.</p>
+        <div class="page-title">Service Agreement Analysis</div>
+        <div class="page-subtitle">Extracted · Classified · Risk-Scored</div>
       </div>
-      <button class="secondary-btn" onclick="window.location.href='app.html'">New Upload</button>
-    </section>
+      <div class="doc-meta">
+        Analyzed: <span>May 06, 2025 · 14:32</span><br>
+        Pages: <span>10</span> &nbsp; Words: <span>6,284</span><br>
+        Doc type: <span>Service Agreement</span>
+      </div>
+    </div>
 
-    <section class="dashboard-grid">
-      <article class="dashboard-panel overview-panel">
-        <h2>Overview</h2>
-        <p id="overview">No summary available yet.</p>
-      </article>
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card gold">
+        <div class="stat-label">Key Clauses Found</div>
+        <div class="stat-value gold">12</div>
+        <div class="stat-sub">across 6 categories</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Risk Alerts</div>
+        <div class="stat-value red">3</div>
+        <div class="stat-sub">2 high · 1 medium</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Clarity Score</div>
+        <div class="stat-value green">62<span style="font-size:16px;font-weight:400">/100</span></div>
+        <div class="stat-sub">Moderate complexity</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">Contract Duration</div>
+        <div class="stat-value orange">12<span style="font-size:16px;font-weight:400">mo</span></div>
+        <div class="stat-sub">Auto-renews annually</div>
+      </div>
+    </div>
 
-      <article class="dashboard-panel">
-        <h2>Payment</h2>
-        <p id="payment-summary"></p>
-        <p id="payment-risk" class="dashboard-risk-text"></p>
-      </article>
+    <!-- MAIN GRID -->
+    <div class="content-grid">
 
-      <article class="dashboard-panel">
-        <h2>Work Scope</h2>
-        <p id="work-scope-summary"></p>
-        <p id="work-scope-risk" class="dashboard-risk-text"></p>
-      </article>
+      <div class="content-left">
 
-      <article class="dashboard-panel">
-        <h2>Ownership</h2>
-        <p id="ownership-summary"></p>
-        <p id="ownership-risk" class="dashboard-risk-text"></p>
-      </article>
+        <!-- SUMMARY -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">AI Summary</div>
+            <div class="doc-type-row">
+              <div class="doc-type-tag active">Service Agreement</div>
+              <div class="doc-type-tag">SaaS</div>
+              <div class="doc-type-tag">B2B</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="summary-text">
+              This agreement grants Company X (Client) rights to use Y's SaaS platform for 12 months starting January 2025. The client pays ₹5,000/month, billed on the 1st, with a 7-day grace period. Either party may terminate with 30 days' written notice; early termination by the client incurs a 3-month penalty fee. Y's liability is capped at 3 months of fees paid. Confidential information must not be disclosed for 2 years post-termination.
+            </div>
+            <div class="eli15-block">
+              <div class="eli15-label">🧒 Explain Like I'm 15</div>
+              <div class="eli15-text">You're renting an app for ₹5,000/month. You must use it for at least a year. If you want to quit early, you pay extra. If something goes wrong with the app, the company only pays back what you paid in 3 months — not more. And you can't tell anyone about their secrets even after you leave.</div>
+            </div>
+          </div>
+        </div>
 
-      <article class="dashboard-panel">
-        <h2>Deadlines</h2>
-        <p id="deadlines-summary"></p>
-        <p id="deadlines-risk" class="dashboard-risk-text"></p>
-      </article>
+        <!-- KEY CLAUSES -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Key Clauses</div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">12 found</span>
+          </div>
+          <div class="card-body">
+            <div class="clause-list">
+              <div class="clause-item">
+                <div><div class="clause-type pay">Payment</div></div>
+                <div class="clause-desc">Monthly subscription fee, billed on the 1st of each month with a 7-day grace period before late fees apply.</div>
+                <div class="clause-value">₹5,000/mo</div>
+              </div>
+              <div class="clause-item">
+                <div><div class="clause-type term">Termination</div></div>
+                <div class="clause-desc">Either party can terminate with 30 days written notice. Client early exit triggers a penalty.</div>
+                <div class="clause-value">30 days</div>
+              </div>
+              <div class="clause-item">
+                <div><div class="clause-type liability">Liability Cap</div></div>
+                <div class="clause-desc">Company Y's total liability is limited to 3 months of fees paid. No consequential damages covered.</div>
+                <div class="clause-value">3× monthly</div>
+              </div>
+              <div class="clause-item">
+                <div><div class="clause-type nda">Confidentiality</div></div>
+                <div class="clause-desc">Both parties agree not to disclose proprietary information for 2 years post-termination.</div>
+                <div class="clause-value">2 years</div>
+              </div>
+              <div class="clause-item">
+                <div><div class="clause-type renewal">Auto-Renewal</div></div>
+                <div class="clause-desc">Contract renews automatically for 12 months unless cancelled 60 days before expiry.</div>
+                <div class="clause-value">⚠ 60-day notice</div>
+              </div>
+              <div class="clause-item">
+                <div><div class="clause-type ip">IP Ownership</div></div>
+                <div class="clause-desc">All data uploaded by client remains client's property. Platform owns derived insights and aggregates.</div>
+                <div class="clause-value">Shared</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <article class="dashboard-panel">
-        <h2>Contract Ending Terms</h2>
-        <p id="ending-summary"></p>
-        <p id="ending-risk" class="dashboard-risk-text"></p>
-      </article>
+        <!-- LANGUAGE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Translation</div>
+            <span style="font-size:12px;color:var(--ok)">✓ Available</span>
+          </div>
+          <div class="card-body">
+            <div style="color:var(--muted);font-size:13px;">Translate summary and key clauses into your preferred language.</div>
+            <div class="lang-row">
+              <div class="lang-tag active">EN · English</div>
+              <div class="lang-tag">HI · हिन्दी</div>
+              <div class="lang-tag">BN · বাংলা</div>
+              <div class="lang-tag">TA · தமிழ்</div>
+              <div class="lang-tag">DE · Deutsch</div>
+              <div class="lang-tag">FR · Français</div>
+            </div>
+            <div class="progress-wrap" style="margin-top:16px">
+              <div class="progress-label"><span>Translation model</span><span>Ready</span></div>
+              <div class="progress-bg"><div class="progress-fill" style="width:100%"></div></div>
+            </div>
+          </div>
+        </div>
 
-      <article class="dashboard-panel">
-        <h2>Risks</h2>
-        <div id="risks" class="risk-list"></div>
-      </article>
+      </div>
 
-      <article class="dashboard-panel overview-panel">
-        <h2>Suggestions</h2>
-        <ul id="suggestions"></ul>
-      </article>
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
 
-      <article class="dashboard-panel recommendation-panel">
-        <h2>Final Advice</h2>
-        <p id="final-advice"></p>
-        <p id="confidence-note" class="dashboard-note"></p>
-      </article>
-    </section>
+        <!-- RISK SCORE -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Risk Score</div></div>
+          <div class="score-center">
+            <div class="ring-container">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a35" stroke-width="8"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#e09a2f" stroke-width="8"
+                  stroke-dasharray="251.2" stroke-dashoffset="100" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-text">
+                <div class="ring-num">60</div>
+                <div class="ring-label">/ 100</div>
+              </div>
+            </div>
+            <div class="score-legend">
+              <div class="legend-row">
+                <span style="color:var(--danger);font-size:12px">High Risk</span>
+                <div class="legend-bar-bg"><div class="legend-bar" style="width:70%;background:var(--danger)"></div></div>
+                <span class="legend-val">2</span>
+              </div>
+              <div class="legend-row">
+                <span style="color:var(--warn);font-size:12px">Medium</span>
+                <div class="legend-bar-bg"><div class="legend-bar" style="width:33%;background:var(--warn)"></div></div>
+                <span class="legend-val">1</span>
+              </div>
+              <div class="legend-row">
+                <span style="color:var(--ok);font-size:12px">Low Risk</span>
+                <div class="legend-bar-bg"><div class="legend-bar" style="width:15%;background:var(--ok)"></div></div>
+                <span class="legend-val">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RISK ALERTS -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Risk Alerts</div></div>
+          <div class="card-body">
+            <div class="risk-list">
+              <div class="risk-item high">
+                <div class="risk-header">
+                  <div class="risk-name">Auto-Renewal Trap</div>
+                  <div class="risk-badge high">High</div>
+                </div>
+                <div class="risk-desc">Contract renews automatically unless cancelled 60 days prior — easy to miss the deadline.</div>
+              </div>
+              <div class="risk-item high">
+                <div class="risk-header">
+                  <div class="risk-name">Early Exit Penalty</div>
+                  <div class="risk-badge high">High</div>
+                </div>
+                <div class="risk-desc">Leaving before 12 months costs 3× monthly fee (₹15,000) — not mentioned in the summary section.</div>
+              </div>
+              <div class="risk-item med">
+                <div class="risk-header">
+                  <div class="risk-name">Liability Cap</div>
+                  <div class="risk-badge med">Medium</div>
+                </div>
+                <div class="risk-desc">Company Y's liability is capped. You can't claim damages beyond 3 months of fees even if you lose more.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Key Dates</div></div>
+          <div class="card-body">
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-dot done"></div>
+                <div class="tl-content">
+                  <div class="tl-title">Contract Start</div>
+                  <div class="tl-date">Jan 01, 2025</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot done"></div>
+                <div class="tl-content">
+                  <div class="tl-title">First Payment Due</div>
+                  <div class="tl-date">Jan 01, 2025</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot warn"></div>
+                <div class="tl-content">
+                  <div class="tl-title">⚠ Cancellation Deadline</div>
+                  <div class="tl-date">Nov 01, 2025 · 60 days before renewal</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-content">
+                  <div class="tl-title">Contract Expiry / Renewal</div>
+                  <div class="tl-date">Dec 31, 2025</div>
+                </div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-content">
+                  <div class="tl-title">NDA Expiry</div>
+                  <div class="tl-date">Dec 31, 2027 · 2 years post-term</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW UPLOAD -->
+        <div class="upload-zone">
+          <div class="upload-icon">📂</div>
+          <div class="upload-title">Analyze Another Document</div>
+          <div class="upload-hint">PDF, DOC, DOCX · Max 20MB</div>
+          <div class="progress-wrap" style="margin-top:14px">
+            <div class="progress-label"><span>Drag & drop or click</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </main>
-
-  <script src="dashboard.js"></script>
+</div>
 </body>
 </html>
