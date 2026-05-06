@@ -44,6 +44,7 @@ def save_contract(filename, content, analysis):
         'filename': filename,
         'content': content,
         'analysis': analysis,
+        'created_at': datetime.now().isoformat(timespec='seconds'),
     }
 
     contracts.append(contract)
@@ -54,3 +55,22 @@ def save_contract(filename, content, analysis):
 def get_history():
     contracts = _load_contracts()
     return sorted(contracts, key=lambda item: item.get('id', 0), reverse=True)
+
+
+def get_latest_contract():
+    contracts = get_history()
+
+    if not contracts:
+        return None
+
+    return contracts[0]
+
+
+def get_contract(contract_id):
+    contracts = _load_contracts()
+
+    for contract in contracts:
+        if contract.get('id') == contract_id:
+            return contract
+
+    return None

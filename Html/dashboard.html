@@ -445,6 +445,30 @@
   }
   .lang-tag:hover, .lang-tag.active { border-color: var(--accent); color: var(--accent2); }
 
+  .suggestion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 18px;
+    color: #cccbd8;
+    font-size: 13px;
+  }
+
+  .advice-block {
+    margin-top: 16px;
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 3px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .empty-state {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
   /* === ANIMATIONS === */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
@@ -763,5 +787,6 @@
 
   </main>
 </div>
+<script src="dashboard.js"></script>
 </body>
 </html>
