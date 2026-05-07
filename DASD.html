@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LexAI – Legal Document Dashboard</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ─── DESIGN TOKENS ─────────────────────────────────────── */
+    :root {
+      --bg: #0b0e14;
+      --surface: #111620;
+      --card: #161c28;
+      --border: #1f2a3c;
+      --border2: #263040;
+      --text: #e2e8f4;
+      --muted: #5a6a80;
+      --label: #7a8fa8;
+      --cyan: #00d4ff;
+      --cyan-dim: rgba(0, 212, 255, .12);
+      --cyan-glow: rgba(0, 212, 255, .35);
+      --green: #00e5a0;
+      --green-dim: rgba(0, 229, 160, .12);
+      --yellow: #ffd166;
+      --yellow-dim: rgba(255, 209, 102, .12);
+      --red: #ff4f6a;
+      --red-dim: rgba(255, 79, 106, .12);
+      --orange: #ff8c42;
+      --sidebar-w: 240px;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --radius: 10px;
+      --radius-lg: 16px;
+      --trans: .2s ease;
+    }
+
+    /* ─── RESET & BASE ───────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ─── SCROLLBAR ──────────────────────────────────────────── */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 4px
+    }
+
+    /* ─── TOPBAR ─────────────────────────────────────────────── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: rgba(11, 14, 20, .92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 14px;
+      z-index: 200;
+    }
+
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-head);
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      letter-spacing: -.3px;
+    }
+
+    .topbar-logo span {
+      color: var(--cyan)
+    }
+
+    .logo-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    .badge-beta {
+      font-family: var(--font-mono);
+      font-size: .6rem;
+      font-weight: 500;
+      background: var(--border2);
+      color: var(--label);
+      border: 1px solid var(--border2);
+      padding: 2px 7px;
+      border-radius: 30px;
+      letter-spacing: .5px;
+    }
+
+    .topbar-spacer {
+      flex: 1
+    }
+
+    .topbar-file {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      font-weight: 500;
+      color: var(--green);
+      letter-spacing: .6px;
+      background: var(--green-dim);
+      border: 1px solid rgba(0, 229, 160, .25);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green)
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), #0074cc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: .75rem;
+      color: #fff;
+      cursor: pointer;
+      border: 2px solid var(--border2);
+      transition: var(--trans);
+    }
+
+    .avatar:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow)
+    }
+
+    /* ─── SIDEBAR ────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 52px;
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      padding: 0 16px;
+      margin-bottom: 24px;
+    }
+
+    .sidebar-label {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 0 8px;
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--label);
+      cursor: pointer;
+      transition: var(--trans);
+      margin-bottom: 2px;
+      position: relative;
+      border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: var(--card);
+      color: var(--text);
+      border-color: var(--border)
+    }
+
+    .nav-item.active {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border-color: rgba(0, 212, 255, .2);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: var(--cyan);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      opacity: .7
+    }
+
+    .nav-item.active .nav-icon {
+      opacity: 1
+    }
+
+    .upload-btn {
+      margin: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--cyan), #0095cc);
+      color: #0b0e14;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      border: none;
+      transition: var(--trans);
+      font-family: var(--font-body);
+      letter-spacing: .2px;
+      box-shadow: 0 4px 20px var(--cyan-glow);
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(0, 212, 255, .5)
+    }
+
+    .upload-btn:active {
+      transform: translateY(0)
+    }
+
+    .sidebar-history {
+      flex: 1;
+      padding: 0 16px;
+      overflow-y: auto
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: .78rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: var(--trans);
+      border: 1px solid transparent;
+      overflow: hidden;
+    }
+
+    .history-item:hover {
+      background: var(--card);
+      color: var(--label);
+      border-color: var(--border)
+    }
+
+    .history-icon {
+      font-size: .7rem;
+      flex-shrink: 0;
+      color: var(--border2)
+    }
+
+    .history-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      font-size: .7rem
+    }
+
+    /* ─── MAIN ───────────────────────────────────────────────── */
+    .main {
+      margin-left: var(--sidebar-w);
+      margin-top: 52px;
+      flex: 1;
+      padding: 28px 28px 40px;
+      max-width: 1400px;
+      width: 100%;
+    }
+
+    /* ─── PAGE HEADER ────────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.5px;
+      line-height: 1.1;
+    }
+
+    .page-title span {
+      color: var(--cyan)
+    }
+
+    .page-subtitle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 5px;
+    }
+
+    .page-subtitle-tag {
+      font-family: var(--font-mono);
+      font-size: .67rem;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .page-meta {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .page-meta strong {
+      color: var(--label)
+    }
+
+    /* ─── STAT CARDS ROW ─────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      transition: var(--trans);
+      cursor: default;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-color, var(--cyan));
+      box-shadow: 0 0 10px var(--accent-glow, var(--cyan-glow));
+      opacity: .7;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .4)
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: .63rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+      color: var(--accent-color, var(--cyan));
+    }
+
+    .stat-sub {
+      font-size: .75rem;
+      color: var(--muted)
+    }
+
+    .stat-card--green {
+      --accent-color: var(--green);
+      --accent-glow: rgba(0, 229, 160, .35)
+    }
+
+    .stat-card--yellow {
+      --accent-color: var(--yellow);
+      --accent-glow: rgba(255, 209, 102, .35)
+    }
+
+    .stat-card--red {
+      --accent-color: var(--red);
+      --accent-glow: rgba(255, 79, 106, .35)
+    }
+
+    /* ─── DASHBOARD GRID ─────────────────────────────────────── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 18px;
+    }
+
+    .dash-left {
+      display: flex;
+      flex-direction: column;
+      gap: 18px
+    }
+
+    .dash-right {
+      display: flex;
+      flex-direction: column;
+      gap: 18px
+    }
+
+    /* ─── PANEL ──────────────────────────────────────────────── */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 500;
+      color: var(--label);
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+
+    .panel-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan-glow)
+    }
+
+    .panel-dot--green {
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(0, 229, 160, .5)
+    }
+
+    .panel-dot--yellow {
+      background: var(--yellow);
+      box-shadow: 0 0 8px rgba(255, 209, 102, .5)
+    }
+
+    .panel-dot--red {
+      background: var(--red);
+      box-shadow: 0 0 8px rgba(255, 79, 106, .5)
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 6px
+    }
+
+    .btn-outline {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 500;
+      color: var(--label);
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--trans);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    .btn-outline.active {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border-color: rgba(0, 212, 255, .3);
+    }
+
+    .panel-body {
+      padding: 20px
+    }
+
+    /* ─── AI SUMMARY ─────────────────────────────────────────── */
+    .ai-summary-quote {
+      border-left: 3px solid var(--cyan);
+      padding: 10px 14px;
+      font-style: italic;
+      font-size: .9rem;
+      color: var(--label);
+      margin-bottom: 16px;
+      background: var(--cyan-dim);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .summary-points {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px
+    }
+
+    .summary-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: .84rem;
+      color: var(--text);
+      transition: var(--trans);
+      cursor: default;
+    }
+
+    .summary-point:hover {
+      border-color: var(--border2)
+    }
+
+    .point-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .simple-words {
+      background: rgba(0, 212, 255, .06);
+      border: 1px solid rgba(0, 212, 255, .15);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .simple-words-label {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      color: var(--cyan);
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .simple-words p {
+      font-size: .83rem;
+      color: var(--muted);
+      line-height: 1.6
+    }
+
+    /* ─── KEY CLAUSES ────────────────────────────────────────── */
+    .clauses-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0
+    }
+
+    .clause-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: var(--trans);
+    }
+
+    .clause-item:last-child {
+      border-bottom: none
+    }
+
+    .clause-item:hover .clause-name {
+      color: var(--cyan)
+    }
+
+    .clause-badge {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      letter-spacing: .4px;
+      flex-shrink: 0;
+    }
+
+    .badge--high {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(255, 79, 106, .25)
+    }
+
+    .badge--med {
+      background: var(--yellow-dim);
+      color: var(--yellow);
+      border: 1px solid rgba(255, 209, 102, .25)
+    }
+
+    .badge--low {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid rgba(0, 229, 160, .25)
+    }
+
+    .badge--info {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 212, 255, .2)
+    }
+
+    .clause-name {
+      flex: 1;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: var(--trans)
+    }
+
+    .clause-tag {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .clause-chevron {
+      color: var(--border2);
+      font-size: .8rem;
+      transition: var(--trans)
+    }
+
+    .clause-item:hover .clause-chevron {
+      color: var(--cyan)
+    }
+
+    /* ─── SAFETY SCORE ───────────────────────────────────────── */
+    .safety-gauge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0 16px;
+    }
+
+    .gauge-wrap {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin-bottom: 10px
+    }
+
+    .gauge-svg {
+      width: 100%;
+      height: 100%
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 10
+    }
+
+    .gauge-arc {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 1.4s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .gauge-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .gauge-num {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--yellow)
+    }
+
+    .gauge-sub {
+      font-family: var(--font-mono);
+      font-size: .6rem;
+      color: var(--muted);
+      letter-spacing: .5px
+    }
+
+    .risk-bars {
+      padding: 0 4px;
+      width: 100%
+    }
+
+    .risk-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px
+    }
+
+    .risk-bar-label {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      min-width: 60px;
+    }
+
+    .risk-bar-label.high {
+      color: var(--red)
+    }
+
+    .risk-bar-label.med {
+      color: var(--yellow)
+    }
+
+    .risk-bar-label.low {
+      color: var(--green)
+    }
+
+    .risk-bar-track {
+      flex: 1;
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .risk-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1.2s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .fill-high {
+      background: var(--red);
+      box-shadow: 0 0 6px rgba(255, 79, 106, .5)
+    }
+
+    .fill-med {
+      background: var(--yellow);
+      box-shadow: 0 0 6px rgba(255, 209, 102, .5)
+    }
+
+    .fill-low {
+      background: var(--green);
+      box-shadow: 0 0 6px rgba(0, 229, 160, .5)
+    }
+
+    .risk-count {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--muted);
+      min-width: 14px;
+      text-align: right
+    }
+
+    /* ─── RISK ALERTS PANEL ──────────────────────────────────── */
+    .alert-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 15px;
+      margin-bottom: 10px;
+      transition: var(--trans);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .alert-item:last-child {
+      margin-bottom: 0
+    }
+
+    .alert-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+    }
+
+    .alert-item--high::before {
+      background: var(--red);
+      box-shadow: 2px 0 12px rgba(255, 79, 106, .5)
+    }
+
+    .alert-item--med::before {
+      background: var(--yellow);
+      box-shadow: 2px 0 12px rgba(255, 209, 102, .5)
+    }
+
+    .alert-item:hover {
+      border-color: var(--border2);
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .alert-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px
+    }
+
+    .alert-name {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text)
+    }
+
+    .alert-body {
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.5
+    }
+
+    .alert-expand {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      color: var(--cyan);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .alert-expand:hover {
+      color: var(--text)
+    }
+
+    /* ─── UPLOAD OVERLAY ─────────────────────────────────────── */
+    .upload-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(7, 10, 16, .85);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upload-overlay.open {
+      display: flex
+    }
+
+    .upload-modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      width: 460px;
+      max-width: 95vw;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
+      animation: modal-in .25s ease;
+    }
+
+    @keyframes modal-in {
+      from {
+        opacity: 0;
+        transform: scale(.95)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .modal-sub {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 24px
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border2);
+      border-radius: 12px;
+      padding: 36px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--trans);
+      background: var(--surface);
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--cyan);
+      background: var(--cyan-dim);
+    }
+
+    .drop-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px
+    }
+
+    .drop-text {
+      font-size: .9rem;
+      color: var(--label);
+      margin-bottom: 4px
+    }
+
+    .drop-hint {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: var(--muted)
+    }
+
+    .file-input {
+      display: none
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px
+    }
+
+    .btn-cancel {
+      padding: 9px 20px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .85rem;
+      cursor: pointer;
+      transition: var(--trans);
+      font-family: var(--font-body);
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    .btn-upload-go {
+      padding: 9px 22px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyan), #0095cc);
+      border: none;
+      color: #0b0e14;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--trans);
+      font-family: var(--font-body);
+    }
+
+    .btn-upload-go:hover {
+      box-shadow: 0 4px 18px var(--cyan-glow)
+    }
+
+    /* ─── DETAIL MODAL ───────────────────────────────────────── */
+    .detail-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(7, 10, 16, .85);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-overlay.open {
+      display: flex
+    }
+
+    .detail-modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      width: 560px;
+      max-width: 96vw;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
+      animation: modal-in .25s ease;
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .detail-title {
+      font-family: var(--font-head);
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .btn-close {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px;
+      transition: var(--trans);
+      line-height: 1;
+    }
+
+    .btn-close:hover {
+      color: var(--text)
+    }
+
+    .detail-section {
+      margin-bottom: 18px
+    }
+
+    .detail-section-label {
+      font-family: var(--font-mono);
+      font-size: .64rem;
+      color: var(--muted);
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .detail-text {
+      font-size: .85rem;
+      color: var(--label);
+      line-height: 1.65
+    }
+
+    .detail-excerpt {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 4px;
+    }
+
+    .detail-recommendation {
+      background: rgba(0, 229, 160, .07);
+      border: 1px solid rgba(0, 229, 160, .2);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: .82rem;
+      color: var(--green);
+      line-height: 1.55;
+    }
+
+    .detail-rec-label {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      letter-spacing: .6px;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      opacity: .7;
+    }
+
+    /* ─── TABS ───────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 14px 20px 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .tab {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: .4px;
+      padding: 7px 14px;
+      border-radius: 7px 7px 0 0;
+      cursor: pointer;
+      transition: var(--trans);
+      border: 1px solid transparent;
+      border-bottom: none;
+      position: relative;
+      bottom: -1px;
+    }
+
+    .tab:hover {
+      color: var(--label)
+    }
+
+    .tab.active {
+      color: var(--cyan);
+      background: var(--card);
+      border-color: var(--border);
+      border-bottom-color: var(--card);
+    }
+
+    /* ─── NOTIFICATIONS ──────────────────────────────────────── */
+    .notif {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-size: .82rem;
+      color: var(--text);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 320px;
+    }
+
+    .notif.show {
+      transform: translateY(0);
+      opacity: 1
+    }
+
+    .notif-icon {
+      font-size: 1.1rem
+    }
+
+    .notif-text {
+      flex: 1;
+      line-height: 1.4
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+    @media(max-width:1100px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .dash-grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:720px) {
+      .sidebar {
+        display: none
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 16px
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    /* ─── SKELETON LOADER ────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, var(--border2) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0
+      }
+
+      100% {
+        background-position: -200% 0
+      }
+    }
+
+    /* ─── PROGRESS BAR ───────────────────────────────────────── */
+    .clarity-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .clarity-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      transition: width 1.4s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* ─── FADE IN ────────────────────────────────────────────── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fade-up .5s ease forwards;
+    }
+
+    @keyframes fade-up {
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .delay-1 {
+      animation-delay: .08s
+    }
+
+    .delay-2 {
+      animation-delay: .16s
+    }
+
+    .delay-3 {
+      animation-delay: .24s
+    }
+
+    .delay-4 {
+      animation-delay: .32s
+    }
+
+    .delay-5 {
+      animation-delay: .40s
+    }
+
+    .delay-6 {
+      animation-delay: .48s
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══ TOPBAR ══════════════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-dot"></div>
+      <span>Lex<span>AI</span></span>
+    </div>
+    <div class="badge-beta">BETA V0.1</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-file" id="topbar-file">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+      </svg>
+      freelancer_contract_demo.docx
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>ANALYZED
+    </div>
+    <div class="avatar" title="Account">AK</div>
+  </header>
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <div class="nav-item active" data-page="dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+        </svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="documents">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        Documents
+      </div>
+      <div class="nav-item" data-page="analysis">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+        Analysis
+      </div>
+      <div class="nav-item" data-page="risk">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        Risk Report
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="upload-btn" id="open-upload">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Upload Document
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tools</div>
+      <div class="nav-item" data-page="translate">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+        Translate
+      </div>
+      <div class="nav-item" data-page="eli15">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <path d="M8 21h8m-4-4v4" />
+        </svg>
+        ELI-15 Mode
+      </div>
+      <div class="nav-item" data-page="compare">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="9" height="20" rx="2" />
+          <rect x="13" y="2" width="9" height="20" rx="2" />
+        </svg>
+        Compare Docs
+      </div>
+    </div>
+
+    <div class="sidebar-history">
+      <div class="sidebar-label">History</div>
+      <div class="history-item" onclick="loadHistory('freelancer_contract_demo.docx')">
+        <span class="history-icon">📄</span>
+        <span class="history-name">freelancer_contract_demo.docx</span>
+      </div>
+      <div class="history-item" onclick="loadHistory('nda_template_v2.docx')">
+        <span class="history-icon">📄</span>
+        <span class="history-name">nda_template_v2.docx</span>
+      </div>
+      <div class="history-item" onclick="loadHistory('employment_agreement.docx')">
+        <span class="history-icon">📄</span>
+        <span class="history-name">employment_agreement.docx</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ════════════════════════════════════════════════ -->
+  <main class="main" id="main-content">
+
+    <!-- Dashboard Page -->
+    <div id="page-dashboard">
+
+      <!-- Header -->
+      <div class="page-header fade-in">
+        <div>
+          <div class="page-title">Freelance Services<br><span>Agreement</span></div>
+          <div class="page-subtitle">
+            <span class="page-subtitle-tag">Extracted</span>
+            <span class="page-subtitle-tag">Classified</span>
+            <span class="page-subtitle-tag">Risk-Scored</span>
+          </div>
+        </div>
+        <div class="page-meta">
+          Analyzed: <strong id="analyzed-time">5/7/2026, 8:19:02 AM</strong><br>
+          Words: <strong>1435</strong><br>
+          Doc type: <strong style="color:var(--cyan)">Legal Document</strong>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card fade-in delay-1">
+          <div class="stat-label">Key Clauses Found</div>
+          <div class="stat-value" id="stat-clauses">6</div>
+          <div class="stat-sub">across dashboard categories</div>
+        </div>
+        <div class="stat-card stat-card--red fade-in delay-2">
+          <div class="stat-label">Risk Alerts</div>
+          <div class="stat-value" id="stat-risks">3</div>
+          <div class="stat-sub">1 high | 2 medium | 0 low</div>
+        </div>
+        <div class="stat-card stat-card--green fade-in delay-3">
+          <div class="stat-label">Clarity Score</div>
+          <div class="stat-value" id="stat-clarity">85<span style="font-size:1.2rem;opacity:.6">/100</span></div>
+          <div class="clarity-bar">
+            <div class="clarity-fill" id="clarity-fill" style="width:0%"></div>
+          </div>
+          <div class="stat-sub" style="margin-top:6px">Easy to understand</div>
+        </div>
+        <div class="stat-card stat-card--yellow fade-in delay-4">
+          <div class="stat-label">Contract Duration</div>
+          <div class="stat-value" style="font-size:1.3rem;color:var(--yellow)">Not specified</div>
+          <div class="stat-sub">Check for start, end, renewal, or notice terms.</div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="dash-grid">
+
+        <!-- LEFT -->
+        <div class="dash-left">
+
+          <!-- AI Summary -->
+          <div class="panel fade-in delay-2">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-dot"></div>AI Summary
+              </div>
+              <div class="panel-actions">
+                <button class="btn-outline active" id="btn-fallback">Fallback Summary</button>
+                <button class="btn-outline" id="btn-needs-review">Needs Review</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="ai-summary-quote">
+                FREELANCE SERVICES AGREEMENT — Web Application Development Project 1.
+              </div>
+              <div class="summary-points">
+                <div class="summary-point">
+                  <span class="point-icon">⚠️</span>
+                  <span>The full AI response was not available in time.</span>
+                </div>
+                <div class="summary-point">
+                  <span class="point-icon">📋</span>
+                  <span>Review the highlighted clauses before signing.</span>
+                </div>
+                <div class="summary-point">
+                  <span class="point-icon">💬</span>
+                  <span>Ask clear questions about money, deadlines, penalties, and ownership.</span>
+                </div>
+              </div>
+              <div class="simple-words">
+                <div class="simple-words-label">In Simple Words</div>
+                <p>The AI service was slow, so this dashboard uses a quick local scan. It highlights likely payment,
+                  deadline, ownership, confidentiality, ending, and risk terms for you to review.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Clauses -->
+          <div class="panel fade-in delay-3">
+            <div class="tabs">
+              <div class="tab active" data-tab="clauses">Key Clauses</div>
+              <div class="tab" data-tab="full-text">Full Text</div>
+              <div class="tab" data-tab="timeline">Timeline</div>
+            </div>
+            <div id="tab-clauses" class="panel-body">
+              <div class="clauses-list" id="clauses-list">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+            <div id="tab-full-text" class="panel-body" style="display:none">
+              <p style="color:var(--muted);font-size:.85rem;line-height:1.7">
+                <strong style="color:var(--text)">FREELANCE SERVICES AGREEMENT</strong><br><br>
+                This Freelance Services Agreement ("Agreement") is entered into as of the Effective Date between Client
+                and Freelancer for the purpose of Web Application Development Project 1.<br><br>
+                <span style="color:var(--cyan)">§1 Scope of Work</span> — Freelancer agrees to deliver the agreed
+                deliverables per the project specification. Any changes to scope must be documented in writing.<br><br>
+                <span style="color:var(--cyan)">§2 Payment Terms</span> — Client shall pay Freelancer within 30 days of
+                invoice. Late payments may incur a 1.5% monthly fee.<br><br>
+                <span style="color:var(--cyan)">§3 Intellectual Property</span> — All work product created under this
+                Agreement shall be considered work-for-hire...<br><br>
+                <span style="color:var(--muted);font-size:.8rem;font-style:italic">[ Full document text continues · 1435
+                  words ]</span>
+              </p>
+            </div>
+            <div id="tab-timeline" class="panel-body" style="display:none">
+              <p style="color:var(--muted);font-size:.82rem">No explicit dates or durations were found in this document.
+                Consider adding start date, end date, milestone dates, and renewal terms for clarity.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="dash-right">
+
+          <!-- Safety Score -->
+          <div class="panel fade-in delay-3">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-dot--yellow panel-dot"></div>Safety Score
+              </div>
+            </div>
+            <div class="panel-body" style="padding-top:10px">
+              <div class="safety-gauge">
+                <div class="gauge-wrap">
+                  <svg class="gauge-svg" viewBox="0 0 100 100">
+                    <circle class="gauge-bg" cx="50" cy="50" r="40" />
+                    <circle class="gauge-arc" id="gauge-arc" cx="50" cy="50" r="40" stroke="var(--yellow)"
+                      stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+                  </svg>
+                  <div class="gauge-value">
+                    <div class="gauge-num" id="gauge-num">0</div>
+                    <div class="gauge-sub">Safe / 100</div>
+                  </div>
+                </div>
+                <div class="risk-bars" style="width:100%;padding:0 8px">
+                  <div class="risk-bar-row">
+                    <span class="risk-bar-label high">High Risk</span>
+                    <div class="risk-bar-track">
+                      <div class="risk-bar-fill fill-high" id="bar-high" style="width:0%"></div>
+                    </div>
+                    <span class="risk-count">1</span>
+                  </div>
+                  <div class="risk-bar-row">
+                    <span class="risk-bar-label med">Medium</span>
+                    <div class="risk-bar-track">
+                      <div class="risk-bar-fill fill-med" id="bar-med" style="width:0%"></div>
+                    </div>
+                    <span class="risk-count">2</span>
+                  </div>
+                  <div class="risk-bar-row">
+                    <span class="risk-bar-label low">Low Risk</span>
+                    <div class="risk-bar-track">
+                      <div class="risk-bar-fill fill-low" id="bar-low" style="width:0%"></div>
+                    </div>
+                    <span class="risk-count">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Alerts -->
+          <div class="panel fade-in delay-4">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-dot--red panel-dot"></div>Risk Alerts
+              </div>
+            </div>
+            <div class="panel-body" id="risk-alerts-list">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /dash-grid -->
+
+    </div><!-- /page-dashboard -->
+
+    <!-- Documents Page -->
+    <div id="page-documents" style="display:none">
+      <div class="page-header fade-in">
+        <div>
+          <div class="page-title">Your <span>Documents</span></div>
+          <div class="page-subtitle"><span class="page-subtitle-tag">3 files</span></div>
+        </div>
+      </div>
+      <div class="panel fade-in delay-1">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-dot"></div>Document Library
+          </div>
+          <button class="btn-outline" onclick="document.getElementById('open-upload').click()">+ Upload</button>
+        </div>
+        <div class="panel-body">
+          <div class="clauses-list">
+            <div class="clause-item" onclick="switchPage('dashboard')">
+              <span style="font-size:1.3rem">📄</span>
+              <div style="flex:1">
+                <div class="clause-name">freelancer_contract_demo.docx</div>
+                <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-mono)">1435 words · Legal
+                  Document · 5/7/2026</div>
+              </div>
+              <span class="badge--low clause-badge">Analyzed</span>
+              <span class="clause-chevron">›</span>
+            </div>
+            <div class="clause-item">
+              <span style="font-size:1.3rem">📄</span>
+              <div style="flex:1">
+                <div class="clause-name">nda_template_v2.docx</div>
+                <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-mono)">892 words · NDA ·
+                  4/21/2026</div>
+              </div>
+              <span class="badge--info clause-badge">Analyzed</span>
+              <span class="clause-chevron">›</span>
+            </div>
+            <div class="clause-item">
+              <span style="font-size:1.3rem">📄</span>
+              <div style="flex:1">
+                <div class="clause-name">employment_agreement.docx</div>
+                <div style="font-size:.75rem;color:var(--muted);font-family:var(--font-mono)">3102 words · Employment ·
+                  4/10/2026</div>
+              </div>
+              <span class="badge--med clause-badge">Review</span>
+              <span class="clause-chevron">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Page -->
+    <div id="page-analysis" style="display:none">
+      <div class="page-header fade-in">
+        <div>
+          <div class="page-title">Deep <span>Analysis</span></div>
+        </div>
+      </div>
+      <div class="dash-grid">
+        <div class="panel fade-in delay-1">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-dot"></div>Clause Breakdown
+            </div>
+          </div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div
+                style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:800;color:var(--cyan)">6</div>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Total Clauses</div>
+              </div>
+              <div
+                style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:800;color:var(--red)">1</div>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:4px">High Risk</div>
+              </div>
+              <div
+                style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:800;color:var(--yellow)">2</div>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Medium Risk</div>
+              </div>
+              <div
+                style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:800;color:var(--green)">3</div>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Acceptable</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel fade-in delay-2">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-dot--green panel-dot"></div>Document Health
+            </div>
+          </div>
+          <div class="panel-body">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div>
+                <div
+                  style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:.8rem;color:var(--muted)">
+                  <span>Clarity</span><span style="color:var(--green)">85%</span>
+                </div>
+                <div class="clarity-bar">
+                  <div class="clarity-fill" style="width:85%"></div>
+                </div>
+              </div>
+              <div>
+                <div
+                  style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:.8rem;color:var(--muted)">
+                  <span>Completeness</span><span style="color:var(--yellow)">62%</span>
+                </div>
+                <div class="clarity-bar">
+                  <div class="clarity-fill"
+                    style="width:62%;background:linear-gradient(90deg,var(--yellow),var(--orange))"></div>
+                </div>
+              </div>
+              <div>
+                <div
+                  style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:.8rem;color:var(--muted)">
+                  <span>Balance</span><span style="color:var(--red)">41%</span>
+                </div>
+                <div class="clarity-bar">
+                  <div class="clarity-fill"
+                    style="width:41%;background:linear-gradient(90deg,var(--red),var(--orange))"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk Report Page -->
+    <div id="page-risk" style="display:none">
+      <div class="page-header fade-in">
+        <div>
+          <div class="page-title">Risk <span>Report</span></div>
+        </div>
+      </div>
+      <div class="panel fade-in delay-1">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-dot--red panel-dot"></div>Full Risk Assessment
+          </div>
+          <button class="btn-outline" onclick="showNotif('📥 Report exported as PDF','success')">Export PDF</button>
+        </div>
+        <div class="panel-body" id="full-risk-panel"><!-- filled by JS --></div>
+      </div>
+    </div>
+
+  </main><!-- /main -->
+
+  <!-- ══ UPLOAD MODAL ══════════════════════════════════════════ -->
+  <div class="upload-overlay" id="upload-overlay">
+    <div class="upload-modal">
+      <div class="modal-title">Upload Document</div>
+      <div class="modal-sub">Supported: .docx, .pdf, .txt — Max 10 MB</div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <div class="drop-icon">📂</div>
+        <div class="drop-text" id="drop-text">Drag & drop your file here, or click to browse</div>
+        <div class="drop-hint">DOCX · PDF · TXT</div>
+      </div>
+      <input type="file" id="file-input" class="file-input" accept=".docx,.pdf,.txt">
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeUpload()">Cancel</button>
+        <button class="btn-upload-go" id="btn-upload-go" onclick="handleUpload()">Analyze Document</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DETAIL MODAL ══════════════════════════════════════════ -->
+  <div class="detail-overlay" id="detail-overlay">
+    <div class="detail-modal">
+      <div class="detail-header">
+        <div>
+          <div class="detail-title" id="detail-title">—</div>
+          <div style="margin-top:5px" id="detail-badge-wrap"></div>
+        </div>
+        <button class="btn-close" onclick="closeDetail()">×</button>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-label">Clause Excerpt</div>
+        <div class="detail-excerpt" id="detail-excerpt">—</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-label">Why this matters</div>
+        <div class="detail-text" id="detail-why">—</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-rec-label">✦ Recommendation</div>
+        <div class="detail-recommendation" id="detail-rec">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ NOTIFICATION ══════════════════════════════════════════ -->
+  <div class="notif" id="notif">
+    <span class="notif-icon" id="notif-icon">✅</span>
+    <span class="notif-text" id="notif-text">Done!</span>
+  </div>
+
+  <script>
+    /* ══ DATA ══════════════════════════════════════════════════ */
+    const CLAUSES = [
+      {
+        id: 1, name: "Liability Limit", tag: "Indemnity", risk: "high",
+        excerpt: "In no event shall either party be liable for indirect, incidental, special, or consequential damages, even if advised of the possibility of such damages.",
+        why: "This clause severely caps what you can claim if the other party causes you financial loss. Combined with no specified cap amount, your compensation could be near-zero.",
+        rec: "Negotiate a specific liability cap (e.g., 2× contract value) and carve-outs for gross negligence or willful misconduct."
+      },
+      {
+        id: 2, name: "Payment Terms", tag: "Payment", risk: "med",
+        excerpt: "Client shall pay Freelancer's invoices within thirty (30) days of receipt. Late payments shall accrue interest at 1.5% per month.",
+        why: "30-day net terms are standard but the interest enforcement mechanism is unclear. There's no mention of what happens if invoices are disputed.",
+        rec: "Add a dispute resolution clause for invoices and consider shortening to NET-15 or requiring a deposit upfront."
+      },
+      {
+        id: 3, name: "IP Ownership", tag: "Ownership", risk: "med",
+        excerpt: "All work product, inventions, and deliverables created by Freelancer shall be deemed work-for-hire and assigned exclusively to Client.",
+        why: "You lose all rights to your work the moment it's created, including portfolio rights. This is extremely common but worth negotiating.",
+        rec: "Request a license-back clause to use work in your portfolio, and clarify whether pre-existing IP is excluded."
+      },
+      {
+        id: 4, name: "Confidentiality", tag: "NDA", risk: "low",
+        excerpt: "Both parties agree to maintain the confidentiality of any proprietary information shared during the engagement for a period of 2 years.",
+        why: "Mutual confidentiality with a 2-year term is reasonable and standard. No significant concerns.",
+        rec: "This clause looks balanced. Confirm that 'proprietary information' is clearly defined elsewhere in the document."
+      },
+      {
+        id: 5, name: "Termination", tag: "Ending", risk: "low",
+        excerpt: "Either party may terminate this Agreement with fourteen (14) days written notice.",
+        why: "Two weeks is a short notice period that could leave you scrambling if the client terminates mid-project.",
+        rec: "Negotiate at least 30 days notice and add a kill fee clause requiring payment for work completed to date."
+      },
+      {
+        id: 6, name: "Dispute Resolution", tag: "Legal", risk: "low",
+        excerpt: "Any disputes arising out of this Agreement shall be resolved by binding arbitration under AAA rules.",
+        why: "Binding arbitration waives your right to sue in court. It can be faster but favors repeat players (usually companies).",
+        rec: "If you're the freelancer, consider adding a carve-out to sue in small claims court for unpaid invoices."
+      },
+    ];
+
+    const RISK_ALERTS = [
+      {
+        id: 1, name: "Liability Limit", level: "high",
+        body: "No maximum cap specified on liability. You may be unable to recover significant damages if the client breaches the agreement."
+      },
+      {
+        id: 2, name: "Payment Terms", level: "med",
+        body: "Invoice dispute mechanism is missing. Without it, clients can delay payment indefinitely by claiming to 'dispute' an invoice."
+      },
+      {
+        id: 3, name: "IP Ownership", level: "med",
+        body: "Work-for-hire assignment is absolute with no portfolio or license-back rights for the freelancer."
+      },
+    ];
+
+    /* ══ RENDER CLAUSES ════════════════════════════════════════ */
+    function renderClauses() {
+      const list = document.getElementById('clauses-list');
+      list.innerHTML = CLAUSES.map(c => `
+    <div class="clause-item" onclick="openDetail(${c.id})">
+      <span class="clause-badge badge--${c.risk === 'high' ? 'high' : c.risk === 'med' ? 'med' : 'low'}">${c.risk.toUpperCase()}</span>
+      <span class="clause-name">${c.name}</span>
+      <span class="clause-tag">${c.tag}</span>
+      <span class="clause-chevron">›</span>
+    </div>
+  `).join('');
+    }
+
+    /* ══ RENDER RISK ALERTS ════════════════════════════════════ */
+    function renderRiskAlerts() {
+      const panel = document.getElementById('risk-alerts-list');
+      panel.innerHTML = RISK_ALERTS.map(r => `
+    <div class="alert-item alert-item--${r.level}" onclick="openDetail(${r.id})">
+      <div class="alert-top">
+        <span class="alert-name">${r.name}</span>
+        <span class="clause-badge badge--${r.level === 'high' ? 'high' : 'med'}">${r.level.toUpperCase()}</span>
+      </div>
+      <div class="alert-body">${r.body}</div>
+      <div class="alert-expand">View clause details <span>›</span></div>
+    </div>
+  `).join('');
+
+      // Full risk panel
+      const full = document.getElementById('full-risk-panel');
+      if (full) full.innerHTML = RISK_ALERTS.map(r => `
+    <div class="alert-item alert-item--${r.level}" style="margin-bottom:12px;cursor:default">
+      <div class="alert-top">
+        <span class="alert-name">${r.name}</span>
+        <span class="clause-badge badge--${r.level === 'high' ? 'high' : 'med'}">${r.level.toUpperCase()}</span>
+      </div>
+      <div class="alert-body">${r.body}</div>
+    </div>
+  `).join('');
+    }
+
+    /* ══ CLAUSE DETAIL MODAL ═══════════════════════════════════ */
+    function openDetail(id) {
+      const c = CLAUSES.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('detail-title').textContent = c.name;
+      document.getElementById('detail-badge-wrap').innerHTML = `<span class="clause-badge badge--${c.risk === 'high' ? 'high' : c.risk === 'med' ? 'med' : 'low'}" style="font-size:.72rem">${c.risk.toUpperCase()} RISK</span> <span class="clause-badge badge--info" style="margin-left:6px">${c.tag}</span>`;
+      document.getElementById('detail-excerpt').textContent = c.excerpt;
+      document.getElementById('detail-why').textContent = c.why;
+      document.getElementById('detail-rec').textContent = c.rec;
+      document.getElementById('detail-overlay').classList.add('open');
+    }
+    function closeDetail() {
+      document.getElementById('detail-overlay').classList.remove('open');
+    }
+
+    /* ══ ANIMATED GAUGES ═══════════════════════════════════════ */
+    function animateGauges() {
+      // Gauge arc
+      const arc = document.getElementById('gauge-arc');
+      const gaugeNum = document.getElementById('gauge-num');
+      if (!arc) return;
+      const target = 54, total = 251.2;
+      const offset = total - (target / 100) * total;
+      setTimeout(() => {
+        arc.style.strokeDashoffset = offset;
+        let curr = 0;
+        const step = setInterval(() => {
+          curr = Math.min(curr + 2, target);
+          gaugeNum.textContent = curr;
+          if (curr >= target) clearInterval(step);
+        }, 25);
+      }, 400);
+
+      // Risk bars
+      setTimeout(() => {
+        document.getElementById('bar-high').style.width = '33%';
+        document.getElementById('bar-med').style.width = '66%';
+        document.getElementById('bar-low').style.width = '5%';
+      }, 600);
+
+      // Clarity fill
+      setTimeout(() => {
+        document.getElementById('clarity-fill').style.width = '85%';
+      }, 500);
+    }
+
+    /* ══ TABS ══════════════════════════════════════════════════ */
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        ['clauses', 'full-text', 'timeline'].forEach(t => {
+          const el = document.getElementById('tab-' + t);
+          if (el) el.style.display = t === id ? 'block' : 'none';
+        });
+      });
+    });
+
+    /* ══ SUMMARY BUTTONS ═══════════════════════════════════════ */
+    document.getElementById('btn-fallback').addEventListener('click', function () {
+      this.classList.add('active');
+      document.getElementById('btn-needs-review').classList.remove('active');
+    });
+    document.getElementById('btn-needs-review').addEventListener('click', function () {
+      this.classList.add('active');
+      document.getElementById('btn-fallback').classList.remove('active');
+      showNotif('📋 Marked for review — you\'ll be reminded before signing', 'info');
+    });
+
+    /* ══ NAVIGATION ════════════════════════════════════════════ */
+    function switchPage(page) {
+      const pages = ['dashboard', 'documents', 'analysis', 'risk', 'translate', 'eli15', 'compare'];
+      pages.forEach(p => {
+        const el = document.getElementById('page-' + p);
+        if (el) el.style.display = p === page ? 'block' : 'none';
+      });
+      document.querySelectorAll('.nav-item').forEach(n => {
+        n.classList.toggle('active', n.dataset.page === page);
+      });
+      if (page === 'dashboard') animateGauges();
+    }
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => switchPage(item.dataset.page));
+    });
+
+    /* ══ UPLOAD MODAL ══════════════════════════════════════════ */
+    document.getElementById('open-upload').addEventListener('click', () => {
+      document.getElementById('upload-overlay').classList.add('open');
+    });
+    function closeUpload() {
+      document.getElementById('upload-overlay').classList.remove('open');
+      document.getElementById('drop-text').textContent = 'Drag & drop your file here, or click to browse';
+    }
+    document.getElementById('upload-overlay').addEventListener('click', function (e) {
+      if (e.target === this) closeUpload();
+    });
+
+    // Drag & drop
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover') });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      const f = e.dataTransfer.files[0];
+      if (f) setFile(f);
+    });
+    document.getElementById('file-input').addEventListener('change', function () {
+      if (this.files[0]) setFile(this.files[0]);
+    });
+    function setFile(f) {
+      document.getElementById('drop-text').textContent = `✅ ${f.name} selected`;
+    }
+    function handleUpload() {
+      closeUpload();
+      showNotif('🔍 Document uploaded and queued for analysis…', 'info');
+      setTimeout(() => showNotif('✅ Analysis complete!', 'success'), 3000);
+    }
+
+    /* ══ HISTORY ═══════════════════════════════════════════════ */
+    function loadHistory(name) {
+      document.getElementById('topbar-file').innerHTML = `
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+    ${name}
+  `;
+      showNotif(`📄 Loaded: ${name}`, 'info');
+      switchPage('dashboard');
+    }
+
+    /* ══ NOTIFICATIONS ═════════════════════════════════════════ */
+    let notifTimer;
+    function showNotif(msg, type = 'success') {
+      const n = document.getElementById('notif');
+      const icon = document.getElementById('notif-icon');
+      const text = document.getElementById('notif-text');
+      icon.textContent = type === 'success' ? '✅' : type === 'info' ? 'ℹ️' : '⚠️';
+      text.textContent = msg;
+      n.classList.add('show');
+      clearTimeout(notifTimer);
+      notifTimer = setTimeout(() => n.classList.remove('show'), 3500);
+    }
+
+    /* ══ CLOSE MODALS ON ESCAPE ════════════════════════════════ */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeDetail(); closeUpload() }
+    });
+    document.getElementById('detail-overlay').addEventListener('click', function (e) {
+      if (e.target === this) closeDetail();
+    });
+
+    /* ══ SET TIMESTAMP ═════════════════════════════════════════ */
+    document.getElementById('analyzed-time').textContent = new Date().toLocaleString();
+
+    /* ══ INIT ══════════════════════════════════════════════════ */
+    renderClauses();
+    renderRiskAlerts();
+    animateGauges();
+  </script>
+</body>
+
+</html>
