@@ -382,6 +382,13 @@ def _build_fallback_summary(contract_text, reason):
             "what_to_do": "Ask for the exact cost, deadline, and cancellation process.",
         })
 
+    risks.append({
+        "level": "Medium",
+        "title": "Full AI Review Unavailable",
+        "explanation": "The full AI analysis did not finish in time, so this is only a quick local scan.",
+        "what_to_do": "Treat this dashboard as a starting point and rerun analysis when the AI service responds.",
+    })
+
     if not clauses:
         clauses.append({
             "type": "other",
@@ -406,7 +413,7 @@ def _build_fallback_summary(contract_text, reason):
             "Review the highlighted clauses before signing.",
             "Ask clear questions about money, deadlines, penalties, and ownership.",
         ],
-        "risk_score": _estimate_risk_score(risks),
+        "risk_score": min(60, _estimate_risk_score(risks)),
         "clarity_score": _estimate_clarity_score(contract_text),
         "contract_duration": "Not specified",
         "duration_note": "Check the document for start, end, renewal, or notice terms.",

@@ -87,9 +87,14 @@ function normalizeSummary(report) {
       eli15_summary: summary,
       top_takeaways: [],
       key_clauses: [],
-      risks: [],
+      risks: [{
+        level: "Medium",
+        title: "Only Basic Analysis Available",
+        explanation: "This saved report has no structured risk details.",
+        what_to_do: "Rerun the analysis to get a complete dashboard."
+      }],
       dates: [],
-      risk_score: 100,
+      risk_score: 60,
       clarity_score: 70,
       contract_duration: "N/A",
       duration_note: "Not specified",
