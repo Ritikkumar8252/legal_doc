@@ -1,5 +1,7 @@
 import os
 import json
+import re
+import socket
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -11,6 +13,8 @@ from prompts.final_prompt import build_prompt
 ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "20"))
+MAX_SUMMARY_CHARS = int(os.getenv("MAX_SUMMARY_CHARS", "12000"))
 
 load_dotenv(ENV_PATH, override=True)
 
@@ -69,7 +73,7 @@ def _generate_with_gemini(prompt, json_response=False):
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=GEMINI_TIMEOUT_SECONDS) as response:
             data = json.loads(response.read().decode("utf-8"))
 
     except urllib.error.HTTPError as exc:
@@ -77,7 +81,13 @@ def _generate_with_gemini(prompt, json_response=False):
         message = _extract_gemini_error(details)
         raise ValueError(message) from exc
 
+    except (TimeoutError, socket.timeout) as exc:
+        raise ValueError('Gemini took too long to respond') from exc
+
     except urllib.error.URLError as exc:
+        if isinstance(exc.reason, (TimeoutError, socket.timeout)):
+            raise ValueError('Gemini took too long to respond') from exc
+
         raise ValueError('Could not connect to Gemini API. Check internet connection.') from exc
 
     candidates = data.get("candidates") or []
@@ -237,7 +247,182 @@ def _normalize_dashboard_summary(summary, contract_text):
     return summary
 
 
+def _trim_contract_text(contract_text):
+    text = contract_text.strip()
+
+    if len(text) <= MAX_SUMMARY_CHARS:
+        return text
+
+    head_size = MAX_SUMMARY_CHARS // 2
+    tail_size = MAX_SUMMARY_CHARS - head_size
+
+    return (
+        text[:head_size]
+        + "\n\n[Middle of document omitted to keep analysis fast.]\n\n"
+        + text[-tail_size:]
+    )
+
+
+def _first_sentence(text):
+    cleaned = " ".join(text.split())
+    match = re.search(r"(.{40,240}?[.!?])\s", cleaned)
+
+    if match:
+        return match.group(1)
+
+    return cleaned[:240] or "No readable text found."
+
+
+def _fallback_title(contract_text):
+    for line in contract_text.splitlines():
+        cleaned = line.strip()
+
+        if 5 <= len(cleaned) <= 90:
+            return cleaned.title()
+
+    return "Document Analysis"
+
+
+def _has_any(text, terms):
+    return any(term in text for term in terms)
+
+
+def _build_fallback_summary(contract_text, reason):
+    lower_text = contract_text.lower()
+    title = _fallback_title(contract_text)
+    clauses = []
+    risks = []
+    dates = []
+    actions = [
+        "Check all payment amounts, deadlines, and penalty terms before signing.",
+        "Ask the other party to clarify anything marked as Not specified.",
+        "Save a copy of the final signed document and any email approvals.",
+    ]
+    questions = [
+        "Can you confirm every payment amount and due date in writing?",
+        "Are there any penalties, auto-renewal terms, or extra fees I should know about?",
+    ]
+
+    if _has_any(lower_text, ["payment", "fee", "invoice", "salary", "compensation", "amount", "inr", "rs."]):
+        clauses.append({
+            "type": "pay",
+            "title": "Payment",
+            "description": "The document appears to include payment or fee terms.",
+            "why_it_matters": "Money terms decide what must be paid, when it is due, and whether extra charges apply.",
+            "action": "Confirm the amount, due date, taxes, and late fee.",
+            "value": "Check payment terms",
+        })
+
+    if _has_any(lower_text, ["deadline", "due date", "milestone", "delivery", "term", "expiry", "expire"]):
+        clauses.append({
+            "type": "term",
+            "title": "Deadlines",
+            "description": "The document appears to include deadlines, milestones, or expiry terms.",
+            "why_it_matters": "Missing a deadline can cause delays, extra costs, or loss of rights.",
+            "action": "Write down each date and reminder.",
+            "value": "Dates found",
+        })
+        dates.append({
+            "label": "Important dates",
+            "value": "Review deadlines in the document",
+            "status": "warn",
+        })
+
+    if _has_any(lower_text, ["terminate", "termination", "cancel", "notice"]):
+        clauses.append({
+            "type": "term",
+            "title": "Ending Terms",
+            "description": "The document appears to explain how the agreement can end.",
+            "why_it_matters": "Ending rules decide how much notice is needed and what happens after cancellation.",
+            "action": "Check notice period and any payment due on exit.",
+            "value": "Notice terms",
+        })
+
+    if _has_any(lower_text, ["confidential", "non-disclosure", "nda", "secret"]):
+        clauses.append({
+            "type": "nda",
+            "title": "Confidentiality",
+            "description": "The document appears to include confidentiality duties.",
+            "why_it_matters": "You may be required to keep information private even after the agreement ends.",
+            "action": "Check what information is covered and for how long.",
+            "value": "Privacy duty",
+        })
+
+    if _has_any(lower_text, ["ownership", "intellectual property", "ip", "copyright", "license"]):
+        clauses.append({
+            "type": "ip",
+            "title": "Ownership",
+            "description": "The document appears to include ownership or IP terms.",
+            "why_it_matters": "This decides who owns the work, data, designs, code, or content.",
+            "action": "Confirm when ownership transfers and what is excluded.",
+            "value": "Ownership terms",
+        })
+
+    if _has_any(lower_text, ["liability", "damages", "indemnify", "indemnification"]):
+        clauses.append({
+            "type": "liability",
+            "title": "Liability",
+            "description": "The document appears to limit or explain responsibility for losses.",
+            "why_it_matters": "A liability cap can limit how much money you can recover if something goes wrong.",
+            "action": "Check the cap and excluded damages.",
+            "value": "Risk cap",
+        })
+        risks.append({
+            "level": "Medium",
+            "title": "Liability Limit",
+            "explanation": "There may be a limit on what one side can recover after a problem.",
+            "what_to_do": "Compare the cap with the real amount you could lose.",
+        })
+
+    if _has_any(lower_text, ["penalty", "late fee", "interest", "auto-renew", "renewal"]):
+        risks.append({
+            "level": "High",
+            "title": "Penalty Or Renewal Risk",
+            "explanation": "The document may include extra charges, penalties, or renewal rules that are easy to miss.",
+            "what_to_do": "Ask for the exact cost, deadline, and cancellation process.",
+        })
+
+    if not clauses:
+        clauses.append({
+            "type": "other",
+            "title": "General Terms",
+            "description": "The document needs a manual read for key obligations.",
+            "why_it_matters": "The fallback summary could not confidently classify the clauses.",
+            "action": "Review the document section by section.",
+            "value": "Review needed",
+        })
+
+    overview = _first_sentence(contract_text)
+
+    return {
+        "document_title": title,
+        "document_type": "Legal Document",
+        "tags": ["Fallback Summary", "Needs Review"],
+        "overview": overview,
+        "plain_language_summary": "The AI service was slow, so this dashboard uses a quick local scan. It highlights likely payment, deadline, ownership, confidentiality, ending, and risk terms for you to review.",
+        "eli15_summary": "This is a quick safety scan, not the full AI explanation. Use it to spot the parts you should check first.",
+        "top_takeaways": [
+            "The full AI response was not available in time.",
+            "Review the highlighted clauses before signing.",
+            "Ask clear questions about money, deadlines, penalties, and ownership.",
+        ],
+        "risk_score": _estimate_risk_score(risks),
+        "clarity_score": _estimate_clarity_score(contract_text),
+        "contract_duration": "Not specified",
+        "duration_note": "Check the document for start, end, renewal, or notice terms.",
+        "key_clauses": clauses[:8],
+        "risks": risks,
+        "dates": dates,
+        "suggestions": actions,
+        "action_items": actions,
+        "questions_to_ask": questions,
+        "final_advice": "Use this fallback dashboard to find the important sections, then rerun the analysis or review the clauses manually before signing.",
+        "confidence_note": f"Fallback summary used because: {reason}",
+    }
+
+
 def summarize_contract(contract_text):
+    prompt_text = _trim_contract_text(contract_text)
     prompt = f"""
 You are a legal document explainer for a static dashboard UI.
 Read the uploaded document text and return only valid JSON.
@@ -343,14 +528,18 @@ Rules:
 - Do not give legal advice as a lawyer.
 
 Document:
-{contract_text}
+{prompt_text}
 """
 
-    content = _generate_with_gemini(prompt, json_response=True)
+    try:
+        content = _generate_with_gemini(prompt, json_response=True)
+    except ValueError as exc:
+        summary = _build_fallback_summary(contract_text, str(exc))
+        return _normalize_dashboard_summary(summary, contract_text)
 
     try:
         summary = json.loads(content)
     except json.JSONDecodeError as exc:
-        raise ValueError('Gemini returned an invalid summary format') from exc
+        summary = _build_fallback_summary(contract_text, 'Gemini returned an invalid summary format')
 
     return _normalize_dashboard_summary(summary, contract_text)
