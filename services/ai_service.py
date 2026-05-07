@@ -8,7 +8,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from prompts.final_prompt import build_prompt
+from prompts.final_prompt import SYSTEM_MESSAGE, build_prompt
 
 ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 GEMINI_MODEL = "gemini-2.5-flash"
@@ -120,10 +120,9 @@ def _extract_gemini_error(details):
 
 
 def analyze_contract(contract_text):
-    prompt = build_prompt(contract_text)
+    prompt = SYSTEM_MESSAGE + "\n\n" + build_prompt(contract_text)
 
-    return _generate_with_gemini(prompt)
-
+    return _generate_with_gemini(prompt, json_response=True)
 
 def _risk_counts(risks):
     counts = {

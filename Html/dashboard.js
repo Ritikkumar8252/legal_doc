@@ -235,7 +235,12 @@ function renderRisks(risks) {
     return;
   }
 
-  risks.forEach((risk) => {
+  risks
+  .sort((a, b) => {
+    const order = { High: 1, Medium: 2, Low: 3 };
+    return (order[a.level] || 99) - (order[b.level] || 99);
+  })
+  .forEach((risk) => {
     const level = riskClass(risk.level);
     const item = document.createElement("div");
     item.className = `risk-item ${level}`;
@@ -253,9 +258,7 @@ function renderRisks(risks) {
 
     const desc = document.createElement("div");
     desc.className = "risk-desc";
-    desc.textContent = risk.what_to_do
-      ? `${risk.explanation || "No explanation returned."} Next: ${risk.what_to_do}`
-      : risk.explanation || "No explanation returned.";
+    desc.textContent = risk.explanation || "No explanation returned.";
 
     header.append(name, badge);
     item.append(header, desc);
@@ -461,17 +464,7 @@ function legacyClauses(summary) {
 }
 
 function clauseText(clause) {
-  const parts = [clause.description];
-
-  if (clause.why_it_matters) {
-    parts.push(`Why it matters: ${clause.why_it_matters}`);
-  }
-
-  if (clause.action) {
-    parts.push(`Check: ${clause.action}`);
-  }
-
-  return parts.filter(Boolean).join(" ");
+  return clause.description || "Not specified.";
 }
 
 function legacyDates(summary) {
