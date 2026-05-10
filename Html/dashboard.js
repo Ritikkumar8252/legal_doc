@@ -1,3 +1,9 @@
+let currentDashboardDocument = {
+  filename: "No document loaded",
+  content: "",
+  createdAt: ""
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   setupActions();
   loadDashboard();
@@ -126,6 +132,11 @@ function renderDashboard(report) {
   const summary = normalizeSummary(report);
   const filename = report.filename || "Uploaded document";
   const content = report.content || "";
+  currentDashboardDocument = {
+    filename,
+    content,
+    createdAt: report.created_at || ""
+  };
   const risks = sortRisks(summary.risks);
   const counts = summary.risk_counts || countRisks(risks);
   const stats = summary.stats || {};
@@ -542,6 +553,66 @@ function setupActions() {
   document.querySelector(".upload-btn")?.addEventListener("click", () => {
     window.location.href = "/app.html";
   });
+
+  getDocumentsNavItem()?.addEventListener("click", () => {
+    openDocumentViewer();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDocumentViewer();
+  });
+}
+
+function getDocumentsNavItem() {
+  return Array.from(document.querySelectorAll(".sidebar .nav-item"))
+    .find((item) => item.textContent.trim().toLowerCase() === "documents");
+}
+
+function openDocumentViewer() {
+  const viewer = ensureDocumentViewer();
+  const wordCount = countWords(currentDashboardDocument.content);
+  const documentsItem = getDocumentsNavItem();
+
+  viewer.querySelector("#doc-viewer-name").textContent = currentDashboardDocument.filename;
+  viewer.querySelector("#doc-viewer-meta").textContent = `${wordCount.toLocaleString()} words${currentDashboardDocument.createdAt ? ` · analyzed ${formatDate(currentDashboardDocument.createdAt)}` : ""}`;
+  viewer.querySelector("#doc-viewer-text").textContent = currentDashboardDocument.content || "No document text is available for this analysis.";
+  documentsItem?.classList.add("viewing");
+  viewer.classList.add("open");
+  viewer.querySelector(".doc-viewer-close")?.focus();
+}
+
+function closeDocumentViewer() {
+  document.getElementById("document-viewer")?.classList.remove("open");
+  getDocumentsNavItem()?.classList.remove("viewing");
+}
+
+function ensureDocumentViewer() {
+  let viewer = document.getElementById("document-viewer");
+  if (viewer) return viewer;
+
+  viewer = document.createElement("div");
+  viewer.id = "document-viewer";
+  viewer.className = "document-viewer";
+  viewer.innerHTML = `
+    <section class="doc-viewer-panel" role="dialog" aria-modal="true" aria-labelledby="doc-viewer-name">
+      <div class="doc-viewer-head">
+        <div class="doc-viewer-title">
+          <strong id="doc-viewer-name">Document</strong>
+          <span id="doc-viewer-meta">0 words</span>
+        </div>
+        <button class="doc-viewer-close" type="button" aria-label="Close document viewer">x</button>
+      </div>
+      <div class="doc-viewer-body">
+        <div class="doc-viewer-text" id="doc-viewer-text"></div>
+      </div>
+    </section>
+  `;
+  viewer.addEventListener("click", (event) => {
+    if (event.target === viewer) closeDocumentViewer();
+  });
+  viewer.querySelector(".doc-viewer-close").addEventListener("click", closeDocumentViewer);
+  document.body.appendChild(viewer);
+  return viewer;
 }
 
 function legacyClauses(summary) {

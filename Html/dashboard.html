@@ -532,6 +532,82 @@
     margin-top: 10px;
   }
 
+  .document-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(2, 6, 23, .72);
+    backdrop-filter: blur(14px);
+  }
+  .document-viewer.open { display: flex; }
+  .doc-viewer-panel {
+    width: min(980px, 100%);
+    max-height: min(820px, calc(100vh - 48px));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    background: rgba(7, 17, 31, .98);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .45);
+    overflow: hidden;
+  }
+  .doc-viewer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(15, 23, 42, .72);
+  }
+  .doc-viewer-title {
+    min-width: 0;
+  }
+  .doc-viewer-title strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-head);
+    font-size: 17px;
+    letter-spacing: -0.02em;
+  }
+  .doc-viewer-title span {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .doc-viewer-close {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .doc-viewer-close:hover { border-color: var(--teal); color: var(--teal); }
+  .doc-viewer-body {
+    overflow: auto;
+    padding: 22px;
+  }
+  .doc-viewer-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: #d7e1ee;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
   .right-panel {
     position: sticky;
     top: 64px;
@@ -604,15 +680,20 @@
   .sidebar {
     background: rgba(7, 17, 31, .9);
     border-right: 1px solid var(--border);
-    padding: 22px 0;
+    padding: 18px 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    counter-reset: sidebarItem;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
   }
 
   .sidebar-section {
-    padding: 0 16px;
-    margin-top: 16px;
+    padding: 0 18px;
+    margin-top: 18px;
     margin-bottom: 6px;
     font-family: var(--font-mono);
     font-size: 9px;
@@ -620,24 +701,60 @@
     text-transform: uppercase;
     color: var(--muted);
   }
+  .sidebar-section:first-child { margin-top: 0; }
 
   .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 9px 18px;
     cursor: pointer;
-    border-left: 2px solid transparent;
+    border-left: 3px solid transparent;
     transition: background .15s, color .15s, border-color .15s;
     font-size: 13px;
     color: var(--muted);
-    font-weight: 400;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    counter-increment: sidebarItem;
   }
   .nav-item:hover { background: rgba(30, 41, 59, .72); color: var(--text); }
   .nav-item.active { border-left-color: var(--accent); background: rgba(34,211,238,0.08); color: var(--text); font-weight: 600; }
-  .nav-item .icon { width: 16px; text-align: center; font-size: 14px; }
+  .nav-item.viewing { border-left-color: var(--teal3); background: rgba(96, 165, 250, .1); color: var(--text); }
+  .nav-item .icon {
+    width: 30px;
+    height: 24px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, .82);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0;
+    flex: 0 0 30px;
+  }
+  .nav-item .icon::before {
+    content: counter(sidebarItem, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .nav-item.active .icon {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .nav-item.viewing .icon {
+    color: #020617;
+    background: var(--teal3);
+    border-color: var(--teal3);
+  }
 
   .upload-btn {
-    margin: 16px;
-    margin-top: auto;
+    margin: 14px 16px 6px;
     background: var(--accent);
     color: #000;
     border: none;
@@ -701,11 +818,7 @@
       </div>
 
       <div class="metrics fadein fadein-delay-1">
-        <div class="metric-card red">
-          <div class="metric-label">Overall Risk</div>
-          <div class="metric-val" id="m-overall-risk">-</div>
-          <div class="metric-sub" id="m-overall-risk-sub">from final prompt</div>
-        </div>
+        
         <div class="metric-card red">
           <div class="metric-label">Risks Found</div>
           <div class="metric-val" id="m-risks">-</div>
