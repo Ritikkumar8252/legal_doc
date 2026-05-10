@@ -2747,5 +2747,201 @@
       }
     },
     "created_at": "2026-05-10T13:31:54"
+  },
+  {
+    "id": 27,
+    "filename": "ritik-kumar-a567e2e5-215c-4789-9278-4f1408a80917-certificate.pdf",
+    "content": "Ritik Kumar\nApplications & Use Cases Professional Certi\u0000cation",
+    "analysis": {
+      "summary": "This document is not a contract; it only contains a name and a certification title. Because of this, all crucial details about your work, payment, and rights are completely missing. There are no terms about how much you'll be paid, what work you need to do, or who owns what you create. This means you have no legal protection or clear expectations for this project. It's extremely risky to proceed without a proper agreement.",
+      "risks": [
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Payment Amount Unknown",
+          "category": "payment",
+          "explanation": "You don't know how much you will be paid for your work.",
+          "description": "You don't know how much you will be paid for your work.",
+          "what_to_do": "Ask to clarify or improve the payment term before signing.",
+          "score": 100
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Work Scope Undefined",
+          "category": "work",
+          "explanation": "You don't know exactly what tasks you are expected to complete.",
+          "description": "You don't know exactly what tasks you are expected to complete.",
+          "what_to_do": "Ask to clarify or improve the work term before signing.",
+          "score": 98
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Ownership of Work Unclear",
+          "category": "ownership",
+          "explanation": "It's not stated who will own the creative work you produce.",
+          "description": "It's not stated who will own the creative work you produce.",
+          "what_to_do": "Ask to clarify or improve the ownership term before signing.",
+          "score": 97
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Payment Schedule Unclear",
+          "category": "payment",
+          "explanation": "There are no details on when or how you will receive your money.",
+          "description": "There are no details on when or how you will receive your money.",
+          "what_to_do": "Ask to clarify or improve the payment term before signing.",
+          "score": 95
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Termination Rules Missing",
+          "category": "termination",
+          "explanation": "You don't know how either side can end the agreement early.",
+          "description": "You don't know how either side can end the agreement early.",
+          "what_to_do": "Ask to clarify or improve the termination term before signing.",
+          "score": 93
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "No Revision Limits",
+          "category": "work",
+          "explanation": "The contract doesn't say how many changes or revisions you might have to do for free.",
+          "description": "The contract doesn't say how many changes or revisions you might have to do for free.",
+          "what_to_do": "Ask to clarify or improve the work term before signing.",
+          "score": 92
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "No Deadlines Specified",
+          "category": "work",
+          "explanation": "There are no dates for when the work needs to be finished.",
+          "description": "There are no dates for when the work needs to be finished.",
+          "what_to_do": "Ask to clarify or improve the work term before signing.",
+          "score": 90
+        }
+      ],
+      "overall_risk_score": 95,
+      "suggestions": [
+        "Always ask for a written contract before starting any work.",
+        "Make sure the contract clearly states your payment amount, when you'll get paid, and what happens if payments are late.",
+        "Ensure the contract describes exactly what work you need to do and any limits on revisions.",
+        "Clarify who owns the work you create and how you can use it.",
+        "Define clear deadlines for your work and for client feedback.",
+        "Understand how the contract can be ended by either side."
+      ],
+      "final_advice": "Do not start any work or agree to anything until you have a complete, written contract that covers all the important details. Protect yourself by getting everything in writing first.",
+      "verdict": "AVOID",
+      "overview": "This document is not a contract; it only contains a name and a certification title. Because of this, all crucial details about your work, payment, and rights are completely missing. There are no terms about how much you'll be paid, what work you need to do, or who owns what you create. This means you have no legal protection or clear expectations for this project. It's extremely risky to proceed without a proper agreement.",
+      "plain_language_summary": "This document is not a contract; it only contains a name and a certification title. Because of this, all crucial details about your work, payment, and rights are completely missing. There are no terms about how much you'll be paid, what work you need to do, or who owns what you create. This means you have no legal protection or clear expectations for this project. It's extremely risky to proceed without a proper agreement.",
+      "eli15_summary": "Do not start any work or agree to anything until you have a complete, written contract that covers all the important details. Protect yourself by getting everything in writing first.",
+      "top_takeaways": [
+        "This document is not a contract; it only contains a name and a certification title. Because of this, all crucial details about your work, payment, and rights are completely missing. There are no terms about how much you'll be paid, what work you need to do, or who owns what you create. This means you have no legal protection or clear expectations for this project. It's extremely risky to proceed without a proper agreement.",
+        "The final prompt says you should avoid signing unless the risky terms change.",
+        "Do not start any work or agree to anything until you have a complete, written contract that covers all the important details. Protect yourself by getting everything in writing first."
+      ],
+      "key_clauses": [
+        {
+          "type": "pay",
+          "title": "Payment Amount Unknown",
+          "description": "You don't know how much you will be paid for your work.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the payment term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "ip",
+          "title": "Work Scope Undefined",
+          "description": "You don't know exactly what tasks you are expected to complete.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the work term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "ip",
+          "title": "Ownership of Work Unclear",
+          "description": "It's not stated who will own the creative work you produce.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the ownership term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "pay",
+          "title": "Payment Schedule Unclear",
+          "description": "There are no details on when or how you will receive your money.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the payment term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "term",
+          "title": "Termination Rules Missing",
+          "description": "You don't know how either side can end the agreement early.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the termination term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "ip",
+          "title": "No Revision Limits",
+          "description": "The contract doesn't say how many changes or revisions you might have to do for free.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the work term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "ip",
+          "title": "No Deadlines Specified",
+          "description": "There are no dates for when the work needs to be finished.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the work term before signing.",
+          "value": "High risk"
+        }
+      ],
+      "risk_score": 5,
+      "document_title": "Freelance Contract Analysis",
+      "document_type": "Freelance Contract",
+      "tags": [
+        "Final Prompt",
+        "AVOID"
+      ],
+      "action_items": [
+        "Always ask for a written contract before starting any work.",
+        "Make sure the contract clearly states your payment amount, when you'll get paid, and what happens if payments are late.",
+        "Ensure the contract describes exactly what work you need to do and any limits on revisions.",
+        "Clarify who owns the work you create and how you can use it.",
+        "Define clear deadlines for your work and for client feedback.",
+        "Understand how the contract can be ended by either side."
+      ],
+      "questions_to_ask": [
+        "Can we change or clarify the highest risk terms before I sign?",
+        "Can you confirm payment, deadlines, ownership, and termination terms in writing?"
+      ],
+      "confidence_note": "Dashboard generated from prompts/final_prompt.py output.",
+      "dates": [],
+      "clarity_score": 90,
+      "contract_duration": "N/A",
+      "duration_note": "Not specified",
+      "risk_counts": {
+        "high": 7,
+        "medium": 0,
+        "low": 0
+      },
+      "stats": {
+        "key_clauses_found": 7,
+        "risk_alerts": 7,
+        "clarity_score": 90,
+        "overall_risk_score": 95,
+        "contract_duration": "N/A",
+        "risk_summary": "7 high | 0 medium | 0 low",
+        "duration_note": "Not specified"
+      }
+    },
+    "created_at": "2026-05-10T14:19:31"
   }
 ]

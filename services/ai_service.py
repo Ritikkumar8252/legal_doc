@@ -120,9 +120,148 @@ def _extract_gemini_error(details):
 
 
 def analyze_contract(contract_text):
-    prompt = SYSTEM_MESSAGE + "\n\n" + build_prompt(contract_text)
+    prompt = SYSTEM_MESSAGE + "\n\n" + build_prompt(_trim_contract_text(contract_text))
+    content = _generate_with_gemini(prompt, json_response=True)
 
-    return _generate_with_gemini(prompt, json_response=True)
+    return _normalize_dashboard_summary(_parse_json_response(content), contract_text)
+
+
+def _parse_json_response(content):
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", content, re.S)
+
+        if match:
+            return json.loads(match.group(0))
+
+        raise ValueError("Gemini returned an invalid JSON format")
+
+
+def _normalize_level(value):
+    level = str(value or "Medium").strip().lower()
+
+    if level.startswith("h"):
+        return "High"
+    if level.startswith("l"):
+        return "Low"
+    return "Medium"
+
+
+def _risk_level_from_score(score):
+    value = int(score) if isinstance(score, int) else int(float(score or 0))
+
+    if value >= 61:
+        return "High"
+    if value >= 31:
+        return "Medium"
+    return "Low"
+
+
+def _category_title(value):
+    text = str(value or "other").replace("_", " ").strip()
+    return text.title() if text else "Other"
+
+
+def _clause_type(category):
+    category = str(category or "").lower()
+
+    if "pay" in category:
+        return "pay"
+    if "work" in category or "scope" in category:
+        return "ip"
+    if "owner" in category or "ip" in category:
+        return "ip"
+    if "term" in category:
+        return "term"
+    return "other"
+
+
+def _normalize_final_prompt_output(summary):
+    if not isinstance(summary, dict):
+        return summary
+
+    if not any(key in summary for key in ("overall_risk_score", "verdict")):
+        return summary
+
+    normalized = dict(summary)
+    final_risks = []
+    final_clauses = []
+
+    for risk in _safe_list(summary.get("risks")):
+        if not isinstance(risk, dict):
+            continue
+
+        score = risk.get("score")
+        level = _normalize_level(risk.get("level") or risk.get("severity"))
+
+        if not risk.get("level") and risk.get("score") is not None:
+            level = _risk_level_from_score(score)
+
+        category = risk.get("category") or "other"
+        description = risk.get("description") or risk.get("explanation") or "No explanation returned."
+        suggestion = f"Ask to clarify or improve the {_category_title(category).lower()} term before signing."
+
+        final_risks.append({
+            "level": level,
+            "severity": level.upper(),
+            "title": risk.get("title") or _category_title(category),
+            "category": category,
+            "explanation": description,
+            "description": description,
+            "what_to_do": risk.get("what_to_do") or suggestion,
+            "score": score,
+        })
+        final_clauses.append({
+            "type": _clause_type(category),
+            "title": risk.get("title") or _category_title(category),
+            "description": description,
+            "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+            "action": risk.get("what_to_do") or suggestion,
+            "value": f"{level} risk",
+        })
+
+    overall_risk = summary.get("overall_risk_score")
+    safety_score = None
+
+    if overall_risk is not None:
+        try:
+            overall_risk = max(0, min(100, int(float(overall_risk))))
+            safety_score = 100 - overall_risk
+        except (TypeError, ValueError):
+            overall_risk = None
+            safety_score = None
+
+    verdict = str(summary.get("verdict") or "").upper()
+    verdict_note = {
+        "SIGN": "The final prompt says this may be okay to sign after checking the details.",
+        "NEGOTIATE": "The final prompt says you should negotiate before signing.",
+        "AVOID": "The final prompt says you should avoid signing unless the risky terms change.",
+    }.get(verdict, "Use the final prompt output to review the document before signing.")
+
+    normalized["overview"] = summary.get("overview") or summary.get("summary") or "No overview returned."
+    normalized["plain_language_summary"] = summary.get("plain_language_summary") or normalized["overview"]
+    normalized["eli15_summary"] = summary.get("eli15_summary") or summary.get("final_advice") or normalized["overview"]
+    normalized["top_takeaways"] = _safe_list(summary.get("top_takeaways")) or [
+        normalized["overview"],
+        verdict_note,
+        summary.get("final_advice") or "Review the risks before signing.",
+    ]
+    normalized["risks"] = final_risks
+    normalized["key_clauses"] = final_clauses[:8]
+    normalized["overall_risk_score"] = overall_risk
+    normalized["risk_score"] = safety_score
+    normalized["document_title"] = summary.get("document_title") or "Freelance Contract Analysis"
+    normalized["document_type"] = summary.get("document_type") or "Freelance Contract"
+    normalized["tags"] = summary.get("tags") or ["Final Prompt", verdict or "Review"]
+    normalized["action_items"] = _safe_list(summary.get("action_items")) or _safe_list(summary.get("suggestions"))
+    normalized["questions_to_ask"] = _safe_list(summary.get("questions_to_ask")) or [
+        "Can we change or clarify the highest risk terms before I sign?",
+        "Can you confirm payment, deadlines, ownership, and termination terms in writing?",
+    ]
+    normalized["confidence_note"] = summary.get("confidence_note") or "Dashboard generated from prompts/final_prompt.py output."
+
+    return normalized
 
 def _risk_counts(risks):
     counts = {
@@ -132,7 +271,7 @@ def _risk_counts(risks):
     }
 
     for risk in risks:
-        level = str(risk.get("level", "Medium")).lower()
+        level = str(risk.get("level") or risk.get("severity") or "Medium").lower()
 
         if level.startswith("h"):
             counts["high"] += 1
@@ -164,6 +303,7 @@ def _normalize_dashboard_summary(summary, contract_text):
     if not isinstance(summary, dict):
         summary = {}
 
+    summary = _normalize_final_prompt_output(summary)
     risks = _safe_list(summary.get("risks"))
 
     key_clauses = _safe_list(summary.get("key_clauses"))
@@ -238,6 +378,7 @@ def _normalize_dashboard_summary(summary, contract_text):
         "key_clauses_found": len(key_clauses),
         "risk_alerts": len(risks),
         "clarity_score": clarity_score,
+        "overall_risk_score": summary.get("overall_risk_score"),
         "contract_duration": summary["contract_duration"],
         "risk_summary": f'{counts["high"]} high | {counts["medium"]} medium | {counts["low"]} low',
         "duration_note": summary["duration_note"],
@@ -429,113 +570,7 @@ def _build_fallback_summary(contract_text, reason):
 
 def summarize_contract(contract_text):
     prompt_text = _trim_contract_text(contract_text)
-    prompt = f"""
-You are a legal document explainer for a static dashboard UI.
-Read the uploaded document text and return only valid JSON.
-Your reader is a freelancer, student, tenant, or small business owner with no legal training.
-Write like a careful friend who understands contracts: clear, direct, and practical.
-
-The JSON must directly power these dashboard sections:
-- page header and document metadata
-- four stat cards
-- AI summary and plain-language explanation block
-- document type tags
-- key clauses list
-- risk score ring
-- risk alerts list
-- key dates timeline
-- takeaways, next steps, questions to ask, and final advice
-
-JSON format:
-{{
-  "document_title": "Short title for the document",
-  "document_type": "Service Agreement, NDA, Lease, Admission Letter, Policy, or other best label",
-  "tags": ["Service Agreement", "SaaS", "B2B"],
-  "overview": "Plain English summary in 2-3 short sentences",
-  "plain_language_summary": "Even simpler summary using everyday words",
-  "eli15_summary": "Very simple explanation for a 15-year-old",
-  "top_takeaways": [
-    "The most important thing the user should know",
-    "Second important thing",
-    "Third important thing"
-  ],
-  "risk_score": 60,
-  "clarity_score": 62,
-  "contract_duration": "12 mo, N/A, or another compact value",
-  "duration_note": "Short note like Auto-renews annually or Not specified",
-  "key_clauses": [
-    {{
-      "type": "pay, term, liability, nda, ip, renewal, or other",
-      "title": "Short clause label",
-      "description": "What this clause says in simple words",
-      "why_it_matters": "Why the user should care",
-      "action": "What the user should check or ask about",
-      "value": "Compact value shown at right, such as INR 5000/mo, 30 days, Shared, or Not specified"
-    }}
-  ],
-  "payment": {{
-    "summary": "Payment terms in simple words",
-    "risk": "Payment risk or Not specified"
-  }},
-  "work_scope": {{
-    "summary": "Scope of work in simple words",
-    "risk": "Scope risk or Not specified"
-  }},
-  "ownership": {{
-    "summary": "Ownership or IP terms in simple words",
-    "risk": "Ownership risk or Not specified"
-  }},
-  "deadlines": {{
-    "summary": "Deadlines in simple words",
-    "risk": "Deadline risk or Not specified"
-  }},
-  "ending_terms": {{
-    "summary": "Termination/ending terms in simple words",
-    "risk": "Ending terms risk or Not specified"
-  }},
-  "risks": [
-    {{
-      "level": "Low, Medium, or High",
-      "title": "Risk title",
-      "explanation": "What can go wrong in simple words",
-      "what_to_do": "One practical step the user can take"
-    }}
-  ],
-  "dates": [
-    {{
-      "label": "Contract Start",
-      "value": "Jan 01, 2025 or Not specified",
-      "status": "done, warn, or pending"
-    }}
-  ],
-  "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"],
-  "action_items": ["Concrete next step 1", "Concrete next step 2", "Concrete next step 3"],
-  "questions_to_ask": ["Question to ask the other party before signing"],
-  "final_advice": "Final practical advice before signing",
-  "confidence_note": "Mention if the document text was incomplete or unclear"
-}}
-
-Rules:
-- Use short sentences. Prefer simple words over legal terms.
-- Explain every money amount, deadline, penalty, ownership term, auto-renewal, confidentiality duty, and liability cap if present.
-- For each key clause, answer: what it says, why it matters, and what to check.
-- For each risk, explain the real-world consequence and one practical next step.
-- Make action_items specific and doable. Start each with a verb like Ask, Confirm, Save, Check, Negotiate, or Clarify.
-- Make questions_to_ask sound like real questions the user can copy into an email.
-- Use INR formatting when the document uses rupees.
-- Keep key_clauses to 4-8 dashboard-friendly items.
-- Keep top_takeaways to exactly 3 items.
-- Keep action_items to 3-5 items.
-- Keep questions_to_ask to 2-4 items.
-- Use risk_score as a safety score from 0 to 100, where lower means more risky.
-- Use clarity_score from 0 to 100, where higher means easier to understand.
-- If data is missing, use "Not specified" instead of inventing facts.
-- Do not say "consult a lawyer" as the main answer. Give practical document-specific checks first.
-- Do not give legal advice as a lawyer.
-
-Document:
-{prompt_text}
-"""
+    prompt = SYSTEM_MESSAGE + "\n\n" + build_prompt(prompt_text)
 
     try:
         content = _generate_with_gemini(prompt, json_response=True)
@@ -544,8 +579,8 @@ Document:
         return _normalize_dashboard_summary(summary, contract_text)
 
     try:
-        summary = json.loads(content)
-    except json.JSONDecodeError as exc:
+        summary = _parse_json_response(content)
+    except (json.JSONDecodeError, ValueError):
         summary = _build_fallback_summary(contract_text, 'Gemini returned an invalid summary format')
 
     return _normalize_dashboard_summary(summary, contract_text)

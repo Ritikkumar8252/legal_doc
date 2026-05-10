@@ -173,6 +173,7 @@
   .metric-card.teal .metric-val { color: var(--teal); }
   .metric-card.red .metric-val { color: var(--red); }
   .metric-card.amber .metric-val { color: var(--amber); }
+  .metric-card.green .metric-val { color: var(--green); }
 
   .verdict-banner {
     display: flex;
@@ -391,6 +392,94 @@
   .divider { height: 1px; background: var(--border); margin: 20px 0; }
   .empty-state { color: var(--muted); font-size: 13px; line-height: 1.6; }
 
+  .prompt-dashboard { grid-template-columns: minmax(0, 1fr) 320px; }
+  .prompt-risk-list { display: grid; gap: 12px; margin-bottom: 24px; }
+  .prompt-risk-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--amber);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .prompt-risk-card.HIGH { border-left-color: var(--red); }
+  .prompt-risk-card.MEDIUM { border-left-color: var(--amber); }
+  .prompt-risk-card.LOW { border-left-color: var(--green); }
+  .prompt-risk-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .prompt-risk-title { font-size: 15px; font-weight: 700; flex: 1; min-width: 0; }
+  .prompt-risk-score {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .category-pill {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    color: var(--teal);
+    background: rgba(34, 211, 238, .08);
+    border: 1px solid rgba(34, 211, 238, .2);
+    border-radius: 6px;
+    padding: 3px 8px;
+    margin-bottom: 8px;
+  }
+  .prompt-risk-desc {
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .suggestion-list { display: grid; gap: 10px; }
+  .suggestion-item {
+    display: flex;
+    gap: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .suggestion-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--teal);
+    color: var(--bg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .final-advice {
+    background: rgba(34, 211, 238, .08);
+    border: 1px solid rgba(34, 211, 238, .2);
+    border-radius: 12px;
+    padding: 14px;
+    color: #e0faff;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .prompt-note {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+
   @keyframes fadein { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
   .fadein { animation: fadein .5s ease forwards; }
   .fadein-delay-1 { animation-delay: .1s; opacity: 0; }
@@ -536,10 +625,10 @@
 
   <div class="main">
     <div id="dashboard">
-      <div class="dash-body">
+      <div class="dash-body prompt-dashboard">
     <main class="left-panel">
       <div class="doc-header fadein">
-        <div class="doc-title" id="d-title">Legal Document Analysis</div>
+        <div class="doc-title" id="d-title">Freelance Contract Analysis</div>
         <div class="doc-meta">
           <span class="meta-tag">Analyzed: <span id="d-time">-</span></span>
           <span class="meta-sep">.</span>
@@ -550,20 +639,25 @@
       </div>
 
       <div class="metrics fadein fadein-delay-1">
-        <div class="metric-card teal">
-          <div class="metric-label">Key Clauses</div>
-          <div class="metric-val" id="m-clauses">-</div>
-          <div class="metric-sub">across categories</div>
+        <div class="metric-card red">
+          <div class="metric-label">Overall Risk</div>
+          <div class="metric-val" id="m-overall-risk">-</div>
+          <div class="metric-sub" id="m-overall-risk-sub">from final prompt</div>
         </div>
         <div class="metric-card red">
-          <div class="metric-label">Risk Alerts</div>
+          <div class="metric-label">Risks Found</div>
           <div class="metric-val" id="m-risks">-</div>
           <div class="metric-sub" id="m-risks-sub">-</div>
         </div>
         <div class="metric-card amber">
-          <div class="metric-label">Contract Duration</div>
-          <div class="metric-val" id="m-duration">-</div>
-          <div class="metric-sub" id="m-duration-sub">-</div>
+          <div class="metric-label">Top Severity</div>
+          <div class="metric-val" id="m-top-severity">-</div>
+          <div class="metric-sub" id="m-top-severity-sub">highest risk level</div>
+        </div>
+        <div class="metric-card teal">
+          <div class="metric-label">Verdict</div>
+          <div class="metric-val" id="m-verdict">-</div>
+          <div class="metric-sub">SIGN / NEGOTIATE / AVOID</div>
         </div>
       </div>
 
@@ -586,27 +680,23 @@
         </div>
       </div>
 
-      <div class="section-head fadein fadein-delay-2">AI Summary</div>
+      <div class="section-head fadein fadein-delay-2">Prompt Summary</div>
       <div class="summary-box fadein fadein-delay-2">
         <div class="summary-text" id="ai-summary">Loading summary...</div>
-        <div class="takeaway-list" id="takeaway-list"></div>
       </div>
 
-      <div class="section-head fadein fadein-delay-3">Risk Clauses</div>
-      <div class="clause-list fadein fadein-delay-3" id="clause-list"></div>
-
-      <div class="section-head fadein fadein-delay-3">Key Clauses Found</div>
-      <div class="key-clause-list fadein fadein-delay-3" id="key-clause-list"></div>
+      <div class="section-head fadein fadein-delay-3">Risks From Prompt</div>
+      <div class="prompt-risk-list fadein fadein-delay-3" id="prompt-risk-list"></div>
     </main>
 
     <aside class="right-panel">
-      <div class="section-head">Safety Score</div>
+      <div class="section-head">Overall Risk Score</div>
       <div class="safety-gauge fadein">
         <div class="gauge-wrap">
           <canvas class="gauge-canvas" id="gauge-canvas" width="140" height="140"></canvas>
           <div class="gauge-val">
             <div class="gauge-big" id="gauge-num">-</div>
-            <div class="gauge-sub">Safe / 100</div>
+            <div class="gauge-sub">Risk / 100</div>
           </div>
         </div>
         <div class="risk-breakdown">
@@ -628,16 +718,14 @@
         </div>
       </div>
 
-      
+      <div class="divider"></div>
+      <div class="section-head">Suggestions</div>
+      <div class="suggestion-list fadein fadein-delay-2" id="suggestion-list"></div>
 
       <div class="divider"></div>
-      <div class="section-head">What You Should Do</div>
-      <p style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:12px">AI-generated action steps</p>
-      <div class="action-list fadein fadein-delay-2" id="action-list"></div>
-
-      <div class="divider"></div>
-      <div class="section-head">Questions To Ask</div>
-      <div class="question-list fadein fadein-delay-2" id="question-list"></div>
+      <div class="section-head">Final Advice</div>
+      <div class="final-advice fadein fadein-delay-2" id="final-advice">Loading advice...</div>
+      <div class="prompt-note" id="prompt-source-note"></div>
     </aside>
   </div>
 </div>

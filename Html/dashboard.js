@@ -72,10 +72,15 @@ function normalizeSummary(report) {
       key_clauses: [],
       risks: [{
         level: "Medium",
+        severity: "MEDIUM",
         title: "Only Basic Analysis Available",
+        category: "other",
         explanation: "This saved report has no structured risk details.",
+        description: "This saved report has no structured risk details.",
+        score: 50,
         what_to_do: "Rerun the analysis to get a complete dashboard."
       }],
+      overall_risk_score: 50,
       dates: [],
       risk_score: 60,
       clarity_score: 70,
@@ -95,12 +100,13 @@ function normalizeSummary(report) {
   return {
     document_title: summary.document_title || report.filename || "Document Analysis",
     document_type: summary.document_type || "Legal Document",
-    overview: summary.overview || "No overview returned.",
+    overview: summary.overview || summary.summary || "No overview returned.",
     plain_language_summary: summary.plain_language_summary || summary.eli15_summary || summary.overview || "",
     top_takeaways: asList(summary.top_takeaways),
     key_clauses: Array.isArray(summary.key_clauses) ? summary.key_clauses : legacyClauses(summary),
     risks,
     dates: Array.isArray(summary.dates) ? summary.dates : [],
+    overall_risk_score: numberOr(summary.overall_risk_score, null),
     risk_score: numberOr(summary.risk_score, estimateSafetyScore(riskCounts)),
     clarity_score: numberOr(summary.clarity_score, 70),
     contract_duration: summary.contract_duration || "N/A",
@@ -109,6 +115,7 @@ function normalizeSummary(report) {
     action_items: asList(summary.action_items),
     questions_to_ask: asList(summary.questions_to_ask),
     final_advice: summary.final_advice || "Review the document carefully before signing.",
+    verdict: summary.verdict || "",
     confidence_note: summary.confidence_note || "",
     risk_counts: summary.risk_counts || riskCounts,
     stats: summary.stats || {}
@@ -120,11 +127,11 @@ function renderDashboard(report) {
   const filename = report.filename || "Uploaded document";
   const content = report.content || "";
   const risks = sortRisks(summary.risks);
-  const clauses = summary.key_clauses;
   const counts = summary.risk_counts || countRisks(risks);
   const stats = summary.stats || {};
-  const safetyScore = clampScore(summary.risk_score);
-  const verdict = getVerdict(safetyScore, counts);
+  const promptRiskScore = getPromptRiskScore(summary, stats);
+  const safetyScore = 100 - promptRiskScore;
+  const verdict = getVerdict(safetyScore, counts, summary.verdict);
 
   setText("tb-docname", filename);
   setText("d-title", summary.document_title || filename);
@@ -132,26 +139,54 @@ function renderDashboard(report) {
   setText("d-words", countWords(content).toLocaleString());
   setText("d-type", summary.document_type);
 
-  setText("m-clauses", String(stats.key_clauses_found ?? clauses.length));
   setText("m-risks", String(stats.risk_alerts ?? risks.length));
   setText("m-risks-sub", stats.risk_summary || `${counts.high} high | ${counts.medium} medium | ${counts.low} low`);
-  setText("m-clarity", `${summary.clarity_score}/100`);
-  setText("m-clarity-sub", clarityLabel(summary.clarity_score));
-  setText("m-duration", compactDuration(stats.contract_duration || summary.contract_duration));
-  setText("m-duration-sub", stats.duration_note || summary.duration_note);
+  renderOverallRisk(promptRiskScore, numberOr(summary.overall_risk_score ?? stats.overall_risk_score, null) !== null);
+  renderTopSeverity(counts);
+  setText("m-verdict", verdict.label);
 
-  renderVerdict(verdict, safetyScore);
+  renderVerdict(verdict, promptRiskScore);
   setText("ai-summary", summary.overview || summary.plain_language_summary);
-  renderTakeaways(summary);
-  renderRiskClauses(risks);
-  renderKeyClauses(clauses);
-  renderGauge(safetyScore, counts);
-  renderRiskAlerts(risks);
-  renderActions(summary);
-  renderQuestions(summary.questions_to_ask);
+  renderPromptRisks(risks);
+  renderRiskGauge(promptRiskScore, counts);
+  renderSuggestions(summary.suggestions.length ? summary.suggestions : summary.action_items);
+  setText("final-advice", summary.final_advice);
+  setText("prompt-source-note", summary.confidence_note || "Showing output shaped by prompts/final_prompt.py.");
 }
 
-function renderVerdict(verdict, score) {
+function getPromptRiskScore(summary, stats) {
+  const promptRisk = numberOr(summary.overall_risk_score ?? stats.overall_risk_score, null);
+
+  if (promptRisk === null) {
+    return 100 - clampScore(summary.risk_score);
+  }
+
+  return clampScore(promptRisk);
+}
+
+function renderOverallRisk(promptRiskScore, hasPromptRisk) {
+  setText("m-overall-risk", `${promptRiskScore}/100`);
+  setText("m-overall-risk-sub", hasPromptRisk ? "from final prompt" : "estimated from alerts");
+}
+
+function renderTopSeverity(counts) {
+  if (counts.high > 0) {
+    setText("m-top-severity", "HIGH");
+    setText("m-top-severity-sub", `${counts.high} high risk item${counts.high === 1 ? "" : "s"}`);
+    return;
+  }
+
+  if (counts.medium > 0) {
+    setText("m-top-severity", "MED");
+    setText("m-top-severity-sub", `${counts.medium} medium risk item${counts.medium === 1 ? "" : "s"}`);
+    return;
+  }
+
+  setText("m-top-severity", "LOW");
+  setText("m-top-severity-sub", `${counts.low} low risk item${counts.low === 1 ? "" : "s"}`);
+}
+
+function renderVerdict(verdict, riskScore) {
   setText("v-icon", verdict.icon);
   setText("v-label", `Verdict - ${verdict.label}`);
   setText("v-title", verdict.title);
@@ -159,17 +194,86 @@ function renderVerdict(verdict, score) {
 
   const arc = document.getElementById("score-arc");
   const circumference = 175.9;
-  const offset = circumference - (score / 100) * circumference;
+  const offset = circumference - (riskScore / 100) * circumference;
 
   if (arc) {
-    arc.style.stroke = scoreColor(score);
+    arc.style.stroke = riskColor(riskScore);
     arc.style.transition = "stroke-dashoffset 1.2s ease";
     window.requestAnimationFrame(() => {
       arc.style.strokeDashoffset = offset;
     });
   }
 
-  animateCount(document.getElementById("score-num"), 0, score, 900);
+  animateCount(document.getElementById("score-num"), 0, riskScore, 900);
+}
+
+function renderPromptRisks(risks) {
+  const container = document.getElementById("prompt-risk-list");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!risks.length) {
+    container.appendChild(emptyState("No risks returned by the prompt."));
+    return;
+  }
+
+  risks.forEach((risk) => {
+    const level = levelName(risk.level || risk.severity);
+    const score = riskScore(risk);
+    const card = document.createElement("div");
+    card.className = `prompt-risk-card ${level}`;
+
+    const top = document.createElement("div");
+    top.className = "prompt-risk-top";
+
+    const badge = document.createElement("span");
+    badge.className = `risk-badge risk-${level}`;
+    badge.textContent = level;
+
+    const title = document.createElement("div");
+    title.className = "prompt-risk-title";
+    title.textContent = risk.title || "Risk";
+
+    const scoreNode = document.createElement("div");
+    scoreNode.className = "prompt-risk-score";
+    scoreNode.textContent = `${score}/100`;
+
+    const category = document.createElement("div");
+    category.className = "category-pill";
+    category.textContent = risk.category || "other";
+
+    const desc = document.createElement("div");
+    desc.className = "prompt-risk-desc";
+    desc.textContent = risk.description || risk.explanation || "No description returned.";
+
+    top.append(badge, title, scoreNode);
+    card.append(top, category, desc);
+    container.appendChild(card);
+  });
+}
+
+function renderSuggestions(suggestions) {
+  const container = document.getElementById("suggestion-list");
+  if (!container) return;
+
+  container.innerHTML = "";
+  const items = suggestions.length ? suggestions : ["Ask the other party to clarify the risky terms before signing."];
+
+  items.slice(0, 5).forEach((suggestion, index) => {
+    const item = document.createElement("div");
+    item.className = "suggestion-item";
+
+    const num = document.createElement("span");
+    num.className = "suggestion-num";
+    num.textContent = String(index + 1);
+
+    const text = document.createElement("span");
+    text.textContent = suggestion;
+
+    item.append(num, text);
+    container.appendChild(item);
+  });
 }
 
 function renderTakeaways(summary) {
@@ -283,9 +387,9 @@ function renderKeyClauses(clauses) {
   });
 }
 
-function renderGauge(score, counts) {
+function renderRiskGauge(score, counts) {
   setText("gauge-num", String(score));
-  drawGauge(score);
+  drawRiskGauge(score);
 
   const total = Math.max(1, counts.high, counts.medium, counts.low);
   setText("rbc-high", String(counts.high));
@@ -294,6 +398,10 @@ function renderGauge(score, counts) {
   setWidth("rb-high", counts.high / total * 100);
   setWidth("rb-med", counts.medium / total * 100);
   setWidth("rb-low", counts.low / total * 100);
+}
+
+function renderGauge(score, counts) {
+  renderRiskGauge(100 - clampScore(score), counts);
 }
 
 function renderRiskAlerts(risks) {
@@ -371,7 +479,7 @@ function renderQuestions(questions) {
   });
 }
 
-function drawGauge(score) {
+function drawRiskGauge(score) {
   const canvas = document.getElementById("gauge-canvas");
   if (!canvas) return;
 
@@ -390,10 +498,14 @@ function drawGauge(score) {
 
   ctx.beginPath();
   ctx.arc(cx, cy, radius, Math.PI, Math.PI + (score / 100) * Math.PI, false);
-  ctx.strokeStyle = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
+  ctx.strokeStyle = riskColor(score);
   ctx.lineWidth = 10;
   ctx.lineCap = "round";
   ctx.stroke();
+}
+
+function drawGauge(score) {
+  drawRiskGauge(100 - clampScore(score));
 }
 
 function renderEmptyDashboard(message) {
@@ -402,7 +514,15 @@ function renderEmptyDashboard(message) {
   setText("v-title", "Upload a document first");
   setText("v-sub", message);
   setText("ai-summary", message);
-  renderGauge(0, { high: 0, medium: 0, low: 0 });
+  setText("m-overall-risk", "-");
+  setText("m-risks", "0");
+  setText("m-top-severity", "-");
+  setText("m-verdict", "-");
+  setText("final-advice", "Upload or paste a contract to generate final prompt output.");
+  setText("prompt-source-note", "");
+  renderPromptRisks([]);
+  renderSuggestions([]);
+  renderRiskGauge(0, { high: 0, medium: 0, low: 0 });
 }
 
 function setupActions() {
@@ -434,7 +554,36 @@ function legacyClauses(summary) {
     }));
 }
 
-function getVerdict(score, counts) {
+function getVerdict(score, counts, promptVerdict) {
+  const verdict = String(promptVerdict || "").toUpperCase();
+
+  if (verdict === "AVOID") {
+    return {
+      label: "AVOID",
+      title: "Do not sign yet",
+      sub: "The final prompt found serious risks. Ask for changes before agreeing.",
+      icon: "!"
+    };
+  }
+
+  if (verdict === "NEGOTIATE") {
+    return {
+      label: "NEGOTIATE",
+      title: "Negotiate before signing",
+      sub: "The final prompt found terms that should be clarified or changed first.",
+      icon: "!"
+    };
+  }
+
+  if (verdict === "SIGN") {
+    return {
+      label: "SIGN",
+      title: "Looks okay to sign",
+      sub: "The final prompt did not find major blockers, but check the details once more.",
+      icon: "OK"
+    };
+  }
+
   if (counts.high > 0 || score < 45) {
     return {
       label: "NEGOTIATE FIRST",
@@ -463,7 +612,7 @@ function getVerdict(score, counts) {
 
 function countRisks(risks) {
   return risks.reduce((counts, risk) => {
-    const level = levelName(risk.level);
+    const level = levelName(risk.level || risk.severity);
     if (level === "HIGH") counts.high += 1;
     else if (level === "LOW") counts.low += 1;
     else counts.medium += 1;
@@ -478,7 +627,7 @@ function estimateSafetyScore(counts) {
 
 function riskScore(risk) {
   if (Number.isFinite(Number(risk.score))) return clampScore(Number(risk.score));
-  const level = levelName(risk.level);
+  const level = levelName(risk.level || risk.severity);
   if (level === "HIGH") return 85;
   if (level === "MEDIUM") return 60;
   return 30;
@@ -486,7 +635,11 @@ function riskScore(risk) {
 
 function sortRisks(risks) {
   const order = { HIGH: 1, MEDIUM: 2, LOW: 3 };
-  return [...risks].sort((a, b) => (order[levelName(a.level)] || 9) - (order[levelName(b.level)] || 9));
+  return [...risks].sort((a, b) => {
+    const scoreDiff = riskScore(b) - riskScore(a);
+    if (scoreDiff !== 0) return scoreDiff;
+    return (order[levelName(a.level || a.severity)] || 9) - (order[levelName(b.level || b.severity)] || 9);
+  });
 }
 
 function levelName(value) {
@@ -524,6 +677,7 @@ function countWords(text) {
 }
 
 function numberOr(value, fallback) {
+  if (value === null || value === undefined || value === "") return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -564,6 +718,12 @@ function scoreColor(score) {
   if (score >= 70) return "var(--teal)";
   if (score >= 40) return "var(--amber)";
   return "var(--red)";
+}
+
+function riskColor(score) {
+  if (score >= 61) return "#ef4444";
+  if (score >= 31) return "#f59e0b";
+  return "#22c55e";
 }
 
 function animateCount(el, from, to, duration) {

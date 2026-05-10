@@ -1,5 +1,7 @@
 # prompt.py
 
+# This sets the AI's personality before it sees the contract.
+# Keep this short and firm.
 SYSTEM_MESSAGE = """
 You are an AI assistant that helps freelancers understand contracts
 in the simplest way possible. You talk like a helpful friend,
@@ -8,8 +10,9 @@ No markdown. No explanation outside the JSON. No extra text.
 """.strip()
 
 
-def build_prompt(contract_text):
-    return f"""
+# This is the actual instruction + the contract text.
+# {contract_text} gets replaced with the real contract before sending.
+USER_PROMPT = """
 Analyze the freelance contract below. Explain everything simply,
 like you are talking to someone with zero legal knowledge.
 
@@ -33,7 +36,7 @@ Risk Scoring Guide (be strict, protect the freelancer):
 Return ONLY this exact JSON structure. Nothing else.
 
 {{
-  "summary": "2 to 4 simple sentences explaining what this contract
+  "summary": "6 to 8 simple sentences explaining what this contract
               says. Mention if any important details are missing.",
 
   "risks": [
@@ -70,3 +73,7 @@ Important rules for the JSON:
 Contract:
 {contract_text}
 """.strip()
+
+
+def build_prompt(contract_text):
+    return USER_PROMPT.format(contract_text=contract_text)
