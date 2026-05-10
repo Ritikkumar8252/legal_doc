@@ -42,7 +42,7 @@ def _get_gemini_api_key():
 def _generate_with_gemini(prompt, json_response=False):
     api_key = _get_gemini_api_key()
     generation_config = {
-        "temperature": 0.2,
+        "temperature": 0,
     }
 
     if json_response:
