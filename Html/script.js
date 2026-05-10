@@ -1,6 +1,10 @@
 const fileInput = document.getElementById("file-upload");
 let currentFileName = "Pasted Text";
 
+document.addEventListener("DOMContentLoaded", () => {
+  loadHistoryDraft();
+});
+
 if (fileInput) {
   fileInput.addEventListener("change", function (event) {
     const file = event.target.files[0];
@@ -8,6 +12,61 @@ if (fileInput) {
       uploadFile(file);
     }
   });
+}
+
+async function loadHistoryDraft() {
+  const params = new URLSearchParams(window.location.search);
+  const historyId = params.get("history");
+  const storedDraft = readDraftDocument();
+
+  if (historyId) {
+    try {
+      const res = await fetch(`/history/${encodeURIComponent(historyId)}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        fillAnalyzeForm(data);
+        localStorage.setItem("draftLegalDocument", JSON.stringify({
+          id: data.id,
+          filename: data.filename || "Document",
+          content: data.content || "",
+          created_at: data.created_at || ""
+        }));
+        return;
+      }
+    } catch (err) {
+      console.warn("Unable to load history item:", err);
+    }
+  }
+
+  if (storedDraft) {
+    fillAnalyzeForm(storedDraft);
+  }
+}
+
+function readDraftDocument() {
+  const stored = localStorage.getItem("draftLegalDocument");
+  if (!stored) return null;
+
+  try {
+    return JSON.parse(stored);
+  } catch (err) {
+    localStorage.removeItem("draftLegalDocument");
+    return null;
+  }
+}
+
+function fillAnalyzeForm(documentData) {
+  const input = document.getElementById("input");
+  const content = documentData?.content || "";
+  const filename = documentData?.filename || "Document";
+
+  if (!input || !content) return;
+
+  input.value = content;
+  currentFileName = filename;
+  addMsg(`Loaded <strong>${escapeHtml(filename)}</strong> from history. Review it, then summarize again if you want a fresh dashboard.`, "bot-msg");
+  input.focus();
 }
 
 async function uploadFile(file) {

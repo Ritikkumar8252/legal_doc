@@ -878,7 +878,13 @@ function renderHistory(history) {
     link.className = "nav-item";
     link.innerHTML = `<span class="icon">DOC</span> ${escapeHtml(item.filename || "Document")}`;
     link.addEventListener("click", () => {
-      window.location.href = `/dashboard.html?id=${encodeURIComponent(item.id)}`;
+      localStorage.setItem("draftLegalDocument", JSON.stringify({
+        id: item.id,
+        filename: item.filename || "Document",
+        content: item.content || "",
+        created_at: item.created_at || ""
+      }));
+      window.location.href = `/app.html?history=${encodeURIComponent(item.id)}`;
     });
     anchor.insertAdjacentElement("afterend", link);
     anchor = link;
