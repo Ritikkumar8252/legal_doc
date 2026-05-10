@@ -144,6 +144,9 @@ function renderDashboard(report) {
   renderOverallRisk(promptRiskScore, numberOr(summary.overall_risk_score ?? stats.overall_risk_score, null) !== null);
   renderTopSeverity(counts);
   setText("m-verdict", verdict.label);
+  setMetricTone("m-overall-risk", riskTone(promptRiskScore));
+  setMetricTone("m-top-severity", severityTone(counts));
+  setMetricTone("m-verdict", verdictTone(verdict.label));
 
   renderVerdict(verdict, promptRiskScore);
   setText("ai-summary", summary.overview || summary.plain_language_summary);
@@ -187,6 +190,12 @@ function renderTopSeverity(counts) {
 }
 
 function renderVerdict(verdict, riskScore) {
+  const banner = document.getElementById("verdict-banner");
+  if (banner) {
+    banner.classList.remove("verdict-SIGN", "verdict-NEGOTIATE", "verdict-AVOID");
+    banner.classList.add(`verdict-${verdict.label}`);
+  }
+
   setText("v-icon", verdict.icon);
   setText("v-label", `Verdict - ${verdict.label}`);
   setText("v-title", verdict.title);
@@ -724,6 +733,33 @@ function riskColor(score) {
   if (score >= 61) return "#ef4444";
   if (score >= 31) return "#f59e0b";
   return "#22c55e";
+}
+
+function riskTone(score) {
+  if (score >= 61) return "red";
+  if (score >= 31) return "amber";
+  return "green";
+}
+
+function severityTone(counts) {
+  if (counts.high > 0) return "red";
+  if (counts.medium > 0) return "amber";
+  return "green";
+}
+
+function verdictTone(label) {
+  if (label === "AVOID") return "red";
+  if (label === "NEGOTIATE") return "amber";
+  return "green";
+}
+
+function setMetricTone(childId, tone) {
+  const child = document.getElementById(childId);
+  const card = child?.closest(".metric-card");
+  if (!card) return;
+
+  card.classList.remove("red", "amber", "green", "teal");
+  card.classList.add(tone);
 }
 
 function animateCount(el, from, to, duration) {
