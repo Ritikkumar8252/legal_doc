@@ -5650,5 +5650,223 @@
       }
     },
     "created_at": "2026-05-10T22:18:20"
+  },
+  {
+    "id": 44,
+    "filename": "freelancer_negative_sample.docx",
+    "content": "FREELANCE SERVICES AGREEMENT\nContract Reference No: FSA-2025-0047\nEffective Date: January 10, 2025\n\n\n1. PARTIES TO THE AGREEMENT\nThis Freelance Services Agreement (hereinafter referred to as the \"Agreement\") is entered into as of January 10, 2025, by and between:\n\n\n2. SCOPE OF WORK\nThe Freelancer agrees to provide the following services (\"Services\") to the Client:\nFull-stack development of a web-based SaaS platform including frontend (React.js), backend (Node.js/Express), and database architecture (PostgreSQL).\nDesign and implementation of RESTful APIs and third-party service integrations (Stripe, SendGrid, AWS S3).\nDeployment, CI/CD pipeline setup, and cloud infrastructure configuration on AWS.\nBug fixing, testing (unit and integration), and performance optimization.\nDocumentation of codebase, APIs, and deployment procedures.\nAny additional tasks requested by the Client's project manager at any time during the contract period, at no additional charge.\n\nThe Client reserves the right to modify, expand, or reduce the Scope of Work at any time without prior notice and without any obligation to renegotiate the compensation terms.\n\n3. COMPENSATION & PAYMENT TERMS\n3.1  Project Fee: The total fixed fee for the Services described in Section 2 is INR 85,000 (Rupees Eighty-Five Thousand Only), payable as follows:\n20% (INR 17,000) upon signing of this Agreement.\n80% (INR 68,000) upon final delivery and Client's written approval.\n\n3.2  Payment Hold: The Client may withhold final payment indefinitely if, in its sole discretion, it determines that the delivered work does not meet its expectations, regardless of whether the work meets the originally agreed specifications.\n\n3.3  Revision Requests: The Freelancer shall complete unlimited revisions requested by the Client at no additional cost, for a period of 12 months following the final delivery date.\n\n3.4  Scope Additions: Any additional features or modules requested by the Client beyond the original scope shall be delivered by the Freelancer without additional compensation unless the Client, at its sole discretion, agrees in writing to additional payment.\n\n3.5  Expenses: All expenses, including software licenses, third-party service fees, hosting costs, and tooling required to complete the Services, shall be borne entirely by the Freelancer.\n\n3.6  Invoicing: Invoices submitted by the Freelancer will be processed within 90 (ninety) business days of Client approval. The Client shall not be held liable for delays in payment processing.\n\n4. PROJECT TIMELINE & DEADLINES\n4.1  The Freelancer agrees to deliver the complete project within 30 (thirty) calendar days from the date of this Agreement (the \"Deadline\").\n\n4.2  Penalty Clause: In the event of any delay beyond the Deadline \u2014 regardless of cause, including client-side delays in feedback or approvals \u2014 the Freelancer shall be liable to pay a penalty of INR 2,000 per calendar day until delivery is completed.\n\n4.3  The Client reserves the right to terminate this Agreement and claim a full refund of any amounts paid if the Deadline is not met, in addition to recovering any penalties accrued under Section 4.2.\n\n4.4  Delivery of work-in-progress reports shall be provided by the Freelancer on a daily basis via email to the designated project manager, failing which the Client may apply a deduction of INR 500 per missed report from the final payment.\n\n5. INTELLECTUAL PROPERTY & OWNERSHIP\n5.1  All work product, deliverables, source code, designs, documentation, ideas, concepts, inventions, and any other materials created by the Freelancer in connection with this Agreement (\"Work Product\") shall be the sole and exclusive property of the Client from the moment of creation, and the Freelancer waives all moral rights therein.\n\n5.2  The Freelancer hereby assigns to the Client all rights, title, and interest in the Work Product, including all intellectual property rights, in perpetuity, worldwide, irrevocably, and without further consideration.\n\n5.3  Portfolio Restriction: The Freelancer shall not display, reference, discuss, or otherwise disclose the Work Product, the Client's name, or the existence of this Agreement in any portfolio, case study, blog post, social media, or professional profile without prior written consent from the Client's legal department, which may be withheld at the Client's absolute discretion.\n\n5.4  Pre-existing Work: Any tools, libraries, or frameworks used by the Freelancer during the project, including open-source components, shall be disclosed to and approved by the Client. The Freelancer shall indemnify the Client against any intellectual property claims arising from the use of any third-party components.\n\n6. CONFIDENTIALITY & NON-DISCLOSURE\n6.1  The Freelancer agrees to keep strictly confidential all proprietary information, trade secrets, business plans, client data, technical specifications, and any other information disclosed by the Client during the term of this Agreement and for a period of 7 (seven) years thereafter.\n\n6.2  The Freelancer shall not, directly or indirectly, use, reproduce, or disclose any Confidential Information for any purpose other than performing the Services under this Agreement.\n\n6.3  Breach of this section shall entitle the Client to seek injunctive relief and liquidated damages of INR 10,00,000 (Ten Lakh Rupees) per incident of disclosure, in addition to any other remedies available at law.\n\n7. NON-COMPETE & NON-SOLICITATION\n7.1  Non-Compete: During the term of this Agreement and for a period of 3 (three) years after its termination, the Freelancer shall not, directly or indirectly, engage in, own, manage, operate, control, or provide services to any business that is competitive with the Client's business in any jurisdiction worldwide.\n\n7.2  Non-Solicitation: The Freelancer shall not, for a period of 3 (three) years following termination, solicit, approach, or accept work from any of the Client's existing, former, or prospective customers or business partners, whether or not the Freelancer was introduced to such parties through the Client.\n\n7.3  Non-Hiring: The Freelancer shall not attempt to hire, recruit, or engage any employee, contractor, or vendor of the Client for a period of 3 (three) years following termination of this Agreement.\n\n8. TERMINATION\n8.1  Termination by Client: The Client may terminate this Agreement at any time, for any reason or no reason, with or without notice. Upon termination, the Client shall owe no compensation to the Freelancer for work completed but not yet paid, and all previously paid amounts are non-refundable by the Client.\n\n8.2  Termination by Freelancer: The Freelancer may terminate this Agreement only with 60 (sixty) days written notice and only if the Client has materially breached the Agreement and failed to cure such breach within 30 days of written notice. In all other cases, termination by the Freelancer shall be considered a breach and shall entitle the Client to recover all amounts paid as well as additional damages.\n\n8.3  Upon termination for any reason, the Freelancer shall immediately surrender all Work Product, source code, credentials, and any other materials related to the project, and shall not retain any copies thereof.\n\n9. LIMITATION OF LIABILITY & INDEMNIFICATION\n9.1  The Freelancer shall indemnify, defend, and hold harmless the Client, its officers, directors, employees, and agents from any and all claims, damages, losses, liabilities, costs, and expenses (including attorney's fees) arising out of or relating to: (a) the Freelancer's performance of the Services; (b) any breach of this Agreement by the Freelancer; (c) any third-party intellectual property claim; or (d) any negligent or wrongful act of the Freelancer.\n\n9.2  The Client's total liability to the Freelancer under this Agreement shall be limited to INR 5,000 (Five Thousand Rupees), regardless of the nature of the claim.\n\n9.3  The Freelancer shall maintain professional indemnity insurance of not less than INR 50,00,000 (Fifty Lakh Rupees) at its own expense during the term of this Agreement and for 2 years thereafter.\n\n10. DISPUTE RESOLUTION & GOVERNING LAW\n10.1  This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware, United States of America, notwithstanding any conflict of law provisions.\n\n10.2  Any dispute arising out of or in connection with this Agreement shall be resolved exclusively by binding arbitration conducted in San Francisco, California, USA, under the rules of the American Arbitration Association (AAA). The arbitration shall be conducted in English and the costs of arbitration shall be borne entirely by the Freelancer.\n\n10.3  The Freelancer waives any right to participate in a class action or class-wide arbitration against the Client.\n\n11. MISCELLANEOUS PROVISIONS\n11.1  Independent Contractor: The Freelancer is an independent contractor and shall not be entitled to any employee benefits, including but not limited to provident fund, gratuity, health insurance, or paid leave.\n\n11.2  Entire Agreement: This Agreement constitutes the entire agreement between the parties. The Client may amend this Agreement at any time by providing written notice to the Freelancer; such amendments shall become binding on the Freelancer upon sending of the notice.\n\n11.3  No Waiver: Failure by the Client to enforce any provision of this Agreement shall not be construed as a waiver of its rights.\n\n11.4  Severability: If any provision is found unenforceable, the remaining provisions shall continue in full force and effect.\n\n11.5  Force Majeure: Force majeure events shall excuse the Client from its payment obligations, but shall not excuse the Freelancer from timely delivery obligations.\n\n11.6  Publicity: The Client may publicly reference the Freelancer's work and name in marketing materials without prior consent.\n\n\n12. SIGNATURES\nBy signing below, both parties acknowledge that they have read, understood, and agree to be bound by the terms and conditions of this Agreement.\n\n\n\n\n\n\n\n\nContract Reference: FSA-2025-0047  |  Prepared by NexGen Solutions Pvt. Ltd. Legal Team\nThis document is legally binding. Please consult an independent legal advisor before signing.",
+    "analysis": {
+      "summary": "This contract is for building a web platform for a fixed fee of INR 85,000. You get 20% upfront and 80% when the client approves the final work. However, the client can ask for unlimited free changes, add more work without extra pay, and even change the contract rules anytime. They can also stop your final payment if they're not happy, even if you met the original plan. You can't show your work in your portfolio, and you could face huge penalties for delays or if you try to leave the contract. This agreement is very risky and heavily favors the client.",
+      "risks": [
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Client can change contract anytime",
+          "category": "other",
+          "explanation": "The client can change any part of this agreement whenever they want, and you have to agree to it, which means the rules can shift without your consent.",
+          "description": "The client can change any part of this agreement whenever they want, and you have to agree to it, which means the rules can shift without your consent.",
+          "what_to_do": "Ask to clarify or improve the other term before signing.",
+          "score": 100
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Client can terminate anytime without paying",
+          "category": "termination",
+          "explanation": "The client can end the contract at any moment, keep all your work, and not pay you for any work you've completed but haven't been paid for yet.",
+          "description": "The client can end the contract at any moment, keep all your work, and not pay you for any work you've completed but haven't been paid for yet.",
+          "what_to_do": "Ask to clarify or improve the termination term before signing.",
+          "score": 100
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Client can withhold final payment indefinitely",
+          "category": "payment",
+          "explanation": "The client can decide not to pay your final 80% payment if they feel the work doesn't meet their 'expectations,' even if you followed the original plan.",
+          "description": "The client can decide not to pay your final 80% payment if they feel the work doesn't meet their 'expectations,' even if you followed the original plan.",
+          "what_to_do": "Ask to clarify or improve the payment term before signing.",
+          "score": 95
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Unlimited free work and revisions",
+          "category": "work",
+          "explanation": "You might have to do endless revisions, extra tasks, or even entirely new features for a year, all without getting paid extra.",
+          "description": "You might have to do endless revisions, extra tasks, or even entirely new features for a year, all without getting paid extra.",
+          "what_to_do": "Ask to clarify or improve the work term before signing.",
+          "score": 95
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Penalties for delays, even if client's fault",
+          "category": "work",
+          "explanation": "You will be charged INR 2,000 every day if the project is late, even if the delay was caused by the client not giving feedback on time.",
+          "description": "You will be charged INR 2,000 every day if the project is late, even if the delay was caused by the client not giving feedback on time.",
+          "what_to_do": "Ask to clarify or improve the work term before signing.",
+          "score": 90
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Unfair dispute resolution and liability",
+          "category": "other",
+          "explanation": "You have to pay for expensive legal disputes in the US, while the client's responsibility to you is capped at a tiny INR 5,000.",
+          "description": "You have to pay for expensive legal disputes in the US, while the client's responsibility to you is capped at a tiny INR 5,000.",
+          "what_to_do": "Ask to clarify or improve the other term before signing.",
+          "score": 90
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Extremely broad non-compete clause",
+          "category": "other",
+          "explanation": "You cannot work for any business that competes with the client, anywhere in the world, for three years after this contract ends.",
+          "description": "You cannot work for any business that competes with the client, anywhere in the world, for three years after this contract ends.",
+          "what_to_do": "Ask to clarify or improve the other term before signing.",
+          "score": 85
+        },
+        {
+          "level": "High",
+          "severity": "HIGH",
+          "title": "Cannot show work in your portfolio",
+          "category": "ownership",
+          "explanation": "You are not allowed to show any of the work you create for this client in your portfolio or talk about it publicly without their special permission.",
+          "description": "You are not allowed to show any of the work you create for this client in your portfolio or talk about it publicly without their special permission.",
+          "what_to_do": "Ask to clarify or improve the ownership term before signing.",
+          "score": 80
+        }
+      ],
+      "overall_risk_score": 92,
+      "suggestions": [
+        "Demand a clear, fixed scope of work with a proper process for any changes, ensuring you get paid for extra work.",
+        "Negotiate fair payment terms, remove the client's 'sole discretion' to withhold payment, and shorten the payment processing time to 15-30 days.",
+        "Remove or significantly limit the non-compete clause; a worldwide, 3-year restriction is unreasonable for a freelancer.",
+        "Remove the penalty clause for delays, especially if the client causes them, or make it mutual.",
+        "Ensure you have the right to display your work in your portfolio after the project is complete.",
+        "Insist on mutual termination rights and fair payment for all work completed if the client ends the contract early.",
+        "Demand that the client cannot change the contract terms unilaterally; any changes should require mutual agreement.",
+        "Negotiate for local dispute resolution and a more balanced liability clause, where both parties have reasonable limits."
+      ],
+      "final_advice": "This contract is extremely one-sided and puts you at severe financial and professional risk. It's designed to protect the client completely while offering you almost no protection. You could end up working for free, paying penalties, and being unable to work for other clients.",
+      "verdict": "AVOID",
+      "overview": "This contract is for building a web platform for a fixed fee of INR 85,000. You get 20% upfront and 80% when the client approves the final work. However, the client can ask for unlimited free changes, add more work without extra pay, and even change the contract rules anytime. They can also stop your final payment if they're not happy, even if you met the original plan. You can't show your work in your portfolio, and you could face huge penalties for delays or if you try to leave the contract. This agreement is very risky and heavily favors the client.",
+      "plain_language_summary": "This contract is for building a web platform for a fixed fee of INR 85,000. You get 20% upfront and 80% when the client approves the final work. However, the client can ask for unlimited free changes, add more work without extra pay, and even change the contract rules anytime. They can also stop your final payment if they're not happy, even if you met the original plan. You can't show your work in your portfolio, and you could face huge penalties for delays or if you try to leave the contract. This agreement is very risky and heavily favors the client.",
+      "eli15_summary": "This contract is extremely one-sided and puts you at severe financial and professional risk. It's designed to protect the client completely while offering you almost no protection. You could end up working for free, paying penalties, and being unable to work for other clients.",
+      "top_takeaways": [
+        "This contract is for building a web platform for a fixed fee of INR 85,000. You get 20% upfront and 80% when the client approves the final work. However, the client can ask for unlimited free changes, add more work without extra pay, and even change the contract rules anytime. They can also stop your final payment if they're not happy, even if you met the original plan. You can't show your work in your portfolio, and you could face huge penalties for delays or if you try to leave the contract. This agreement is very risky and heavily favors the client.",
+        "The final prompt says you should avoid signing unless the risky terms change.",
+        "This contract is extremely one-sided and puts you at severe financial and professional risk. It's designed to protect the client completely while offering you almost no protection. You could end up working for free, paying penalties, and being unable to work for other clients."
+      ],
+      "key_clauses": [
+        {
+          "type": "other",
+          "title": "Client can change contract anytime",
+          "description": "The client can change any part of this agreement whenever they want, and you have to agree to it, which means the rules can shift without your consent.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the other term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "term",
+          "title": "Client can terminate anytime without paying",
+          "description": "The client can end the contract at any moment, keep all your work, and not pay you for any work you've completed but haven't been paid for yet.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the termination term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "pay",
+          "title": "Client can withhold final payment indefinitely",
+          "description": "The client can decide not to pay your final 80% payment if they feel the work doesn't meet their 'expectations,' even if you followed the original plan.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the payment term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "ip",
+          "title": "Unlimited free work and revisions",
+          "description": "You might have to do endless revisions, extra tasks, or even entirely new features for a year, all without getting paid extra.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the work term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "ip",
+          "title": "Penalties for delays, even if client's fault",
+          "description": "You will be charged INR 2,000 every day if the project is late, even if the delay was caused by the client not giving feedback on time.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the work term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "other",
+          "title": "Unfair dispute resolution and liability",
+          "description": "You have to pay for expensive legal disputes in the US, while the client's responsibility to you is capped at a tiny INR 5,000.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the other term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "other",
+          "title": "Extremely broad non-compete clause",
+          "description": "You cannot work for any business that competes with the client, anywhere in the world, for three years after this contract ends.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the other term before signing.",
+          "value": "High risk"
+        },
+        {
+          "type": "ip",
+          "title": "Cannot show work in your portfolio",
+          "description": "You are not allowed to show any of the work you create for this client in your portfolio or talk about it publicly without their special permission.",
+          "why_it_matters": "This can affect your money, work, rights, or ability to leave the contract.",
+          "action": "Ask to clarify or improve the ownership term before signing.",
+          "value": "High risk"
+        }
+      ],
+      "risk_score": 8,
+      "document_title": "Freelance Contract Analysis",
+      "document_type": "Freelance Contract",
+      "tags": [
+        "Final Prompt",
+        "AVOID"
+      ],
+      "action_items": [
+        "Demand a clear, fixed scope of work with a proper process for any changes, ensuring you get paid for extra work.",
+        "Negotiate fair payment terms, remove the client's 'sole discretion' to withhold payment, and shorten the payment processing time to 15-30 days.",
+        "Remove or significantly limit the non-compete clause; a worldwide, 3-year restriction is unreasonable for a freelancer.",
+        "Remove the penalty clause for delays, especially if the client causes them, or make it mutual.",
+        "Ensure you have the right to display your work in your portfolio after the project is complete.",
+        "Insist on mutual termination rights and fair payment for all work completed if the client ends the contract early.",
+        "Demand that the client cannot change the contract terms unilaterally; any changes should require mutual agreement.",
+        "Negotiate for local dispute resolution and a more balanced liability clause, where both parties have reasonable limits."
+      ],
+      "questions_to_ask": [
+        "Can we change or clarify the highest risk terms before I sign?",
+        "Can you confirm payment, deadlines, ownership, and termination terms in writing?"
+      ],
+      "confidence_note": "Dashboard generated from prompts/final_prompt.py output.",
+      "dates": [],
+      "clarity_score": 84,
+      "contract_duration": "N/A",
+      "duration_note": "Not specified",
+      "risk_counts": {
+        "high": 8,
+        "medium": 0,
+        "low": 0
+      },
+      "stats": {
+        "key_clauses_found": 8,
+        "risk_alerts": 8,
+        "clarity_score": 84,
+        "overall_risk_score": 92,
+        "contract_duration": "N/A",
+        "risk_summary": "8 high | 0 medium | 0 low",
+        "duration_note": "Not specified"
+      }
+    },
+    "created_at": "2026-05-11T09:40:01"
   }
 ]
