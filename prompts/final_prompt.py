@@ -36,7 +36,7 @@ Risk Scoring Guide (be strict, protect the freelancer):
 Return ONLY this exact JSON structure. Nothing else.
 
 {{
-  "summary": "6 to 8 simple sentences explaining what this contract
+  "summary": "4 to 6 simple sentences explaining what this contract
               says. Mention if any important details are missing.",
 
   "risks": [

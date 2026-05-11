@@ -164,7 +164,12 @@
   .meta-tag.doc-type { color: var(--teal); }
   .meta-sep { color: var(--dimmed); }
 
-  .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.6fr;
+    gap: 14px;
+    margin-bottom: 24px;
+}
   .metric-card {
     background: var(--panel);
     border: 1px solid var(--border);
